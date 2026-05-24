@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'app.dart';
-import 'data/models/intel_item.dart';
-import 'data/models/patch_intel_item.dart';
-import 'data/models/plan_task.dart';
-import 'data/models/coaching_request.dart';
-import 'data/app_data.dart';
+import 'models/intel_item.dart';
+import 'models/patch_intel_item.dart';
+import 'models/plan_task.dart';
+import 'models/coaching_request.dart';
 
 void main() {
   runApp(const CodCampApp());
