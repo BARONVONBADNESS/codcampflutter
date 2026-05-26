@@ -4,6 +4,11 @@ import 'models/intel_item.dart';
 import 'models/patch_intel_item.dart';
 import 'models/plan_task.dart';
 import 'models/coaching_request.dart';
+import 'shared/widgets/request_line.dart';
+import 'shared/widgets/meta_pill.dart';
+import 'shared/widgets/info_chip.dart';
+import 'shared/widgets/detail_panel.dart';
+import 'shared/widgets/empty_state_card.dart';
 
 void main() {
   runApp(const CodCampApp());
@@ -1944,7 +1949,7 @@ class TipDetailScreen extends StatelessWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: item.accent.withOpacity(0.14),
+                            color: item.accent.withValues(alpha:0.14),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(item.icon, color: item.accent),
@@ -2122,7 +2127,7 @@ class TipDetailScreen extends StatelessWidget {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: relatedTip.accent.withOpacity(0.12),
+                                  color: relatedTip.accent.withValues(alpha:0.12),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -2415,7 +2420,7 @@ class PatchDetailScreen extends StatelessWidget {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: related.accent.withOpacity(0.12),
+                                  color: related.accent.withValues(alpha:0.12),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -2946,51 +2951,6 @@ class CoachingSummaryCard extends StatelessWidget {
   }
 }
 
-class RequestLine extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const RequestLine({
-    super.key,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF7E8A98),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class SelectionCard extends StatelessWidget {
   final String title;
   final String value;
@@ -3025,7 +2985,7 @@ class SelectionCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: accent.withOpacity(0.14),
+                color: accent.withValues(alpha:0.14),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: accent),
@@ -3118,7 +3078,7 @@ class PremiumTipFeedCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: item.accent.withOpacity(0.14),
+                      color: item.accent.withValues(alpha:0.14),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(item.icon, color: item.accent),
@@ -3286,7 +3246,7 @@ class PatchIntelCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: item.accent.withOpacity(0.14),
+                      color: item.accent.withValues(alpha:0.14),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(item.icon, color: item.accent),
@@ -3437,8 +3397,7 @@ class PlanTaskCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: completed ? const Color(0x1014D7B56D) : const Color(0xFF0F141B),
-          borderRadius: BorderRadius.circular(22),
+color: completed ? const Color(0x14D7B56D) : const Color(0xFF0F141B),          borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: completed
                 ? const Color(0x33D7B56D)
@@ -3452,7 +3411,7 @@ class PlanTaskCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: task.accent.withOpacity(0.14),
+                color: task.accent.withValues(alpha:0.14),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(task.icon, color: task.accent),
@@ -3527,7 +3486,7 @@ class FocusCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.14),
+              color: accent.withValues(alpha:0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: accent),
@@ -3660,7 +3619,7 @@ class InfoCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.14),
+              color: accent.withValues(alpha:0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: accent),
@@ -3907,161 +3866,6 @@ class SavedPatchCard extends StatelessWidget {
   }
 }
 
-class MetaPill extends StatelessWidget {
-  final String label;
-  final Color color;
-
-  const MetaPill({
-    super.key,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: color.withOpacity(0.18)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-}
-
-class InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const InfoChip({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0x10FFFFFF),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x18FFFFFF)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: const Color(0xFFD7B56D)),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DetailPanel extends StatelessWidget {
-  final String title;
-  final Widget child;
-
-  const DetailPanel({
-    super.key,
-    required this.title,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F141B),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0x14FFFFFF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class EmptyStateCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const EmptyStateCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F141B),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0x14FFFFFF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: Color(0xFF93A0AF),
-              fontSize: 13,
-              height: 1.45,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class SettingsSwitchTile extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -4096,7 +3900,7 @@ class SettingsSwitchTile extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.14),
+              color: accent.withValues(alpha:0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: accent),
@@ -4301,7 +4105,7 @@ class StatCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.14),
+              color: color.withValues(alpha:0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: color),
