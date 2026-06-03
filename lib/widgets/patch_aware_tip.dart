@@ -28,9 +28,9 @@ class PatchAwareTip extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFFF151D27),
-            const Color(0xFFF0E141C),
-            const Color(0xFFF0A0F15),
+            const Color(0xFF151D27),
+            const Color(0xFF0E141C),
+            const Color(0xFF0A0F15),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -61,7 +61,7 @@ class PatchAwareTip extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             subtitle,
             style: TextStyle(
@@ -71,7 +71,7 @@ class PatchAwareTip extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             tip,
             style: TextStyle(
