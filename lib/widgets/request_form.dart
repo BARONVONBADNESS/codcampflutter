@@ -6,6 +6,7 @@ import '../models/coaching_request_model.dart';
 import 'request_option.dart';
 import 'patch_aware_tip.dart';
 import 'member_notes_section.dart';
+import 'toggle_row.dart';
 
 /// The main form widget that captures all coaching request fields
 /// Extracted to allow reuse and independent testing
@@ -73,7 +74,7 @@ class _RequestFormState extends State<RequestForm> {
         Text(
           'Mode',
           style: TextStyle(
-            color: const Color(0xFFFD7B560),
+            color: const Color(0xFFD7B560),
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
             height: 1.3,
@@ -139,7 +140,7 @@ class _RequestFormState extends State<RequestForm> {
         Text(
           "What's your biggest weakness?",
           style: TextStyle(
-            color: const Color(0xFFFFD7B560),
+            color: const Color(0xFFD7B560),
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
             height: 1.3,
@@ -165,13 +166,16 @@ class _RequestFormState extends State<RequestForm> {
           minLines: 1,
           maxLines: 4,
           controller: _weaknessController ??= TextEditingController(text: c.weakness),
-          onChanged: (v) => _updateStringField(() => c.weakness, (val) => c.weakness = val),
+          onChanged: (v) => _updateStringField(
+            () => c.weakness,
+            (val) => c.weakness = val,
+          ),
         ),
         const SizedBox(height: 20),
         Text(
           "What's the goal for this session?",
           style: TextStyle(
-            color: const Color(0xFFFFD7B560),
+            color: const Color(0xFFD7B560),
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
             height: 1.3,
@@ -197,7 +201,10 @@ class _RequestFormState extends State<RequestForm> {
           minLines: 1,
           maxLines: 4,
           controller: _goalController ??= TextEditingController(text: c.goal),
-          onChanged: (v) => _updateStringField(() => c.goal, (val) => c.goal = val),
+          onChanged: (v) => _updateStringField(
+            () => c.goal,
+            (val) => c.goal = val,
+          ),
         ),
 
         // ── SESSION LENGTH ───────────────────────────────────
@@ -205,7 +212,7 @@ class _RequestFormState extends State<RequestForm> {
         Text(
           'How long is the session?',
           style: TextStyle(
-            color: const Color(0xFFFFD7B560),
+            color: const Color(0xFFD7B560),
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
             height: 1.3,
@@ -230,7 +237,10 @@ class _RequestFormState extends State<RequestForm> {
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
           controller: _sessionController ??= TextEditingController(text: c.sessionLength),
-          onChanged: (v) => _updateIntField(() => c.sessionLength, (val) => c.sessionLength = val),
+          onChanged: (v) => _updateIntField(
+            () => c.sessionLength,
+            (val) => c.sessionLength = val,
+          ),
         ),
 
         // ── URGENCY ──────────────────────────────────────────
@@ -238,7 +248,7 @@ class _RequestFormState extends State<RequestForm> {
         Text(
           'How urgent is this?',
           style: TextStyle(
-            color: const Color(0xFFFFD7B560),
+            color: const Color(0xFFD7B560),
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
             height: 1.3,
@@ -334,43 +344,5 @@ class _RequestFormState extends State<RequestForm> {
     _goalController?.dispose();
     _sessionController?.dispose();
     super.dispose();
-  }
-}
-
-/// Shared toggle row widget
-/// Used by both RequestForm and RequestSummary for consistent UX
-class ToggleRow extends StatelessWidget {
-  const ToggleRow({
-    super.key,
-    required this.label,
-    required this.active,
-    required this.onToggle,
-  });
-
-  final String label;
-  final bool active;
-  final VoidCallback onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      child: Row(
-        children: [
-          Icon(
-            active ? Icons.toggle_on : Icons.toggle_off,
-            color: active ? const Color(0xFF00FFC8) : Colors.grey.shade700,
-            size: 28,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? Colors.white : Colors.white54,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
