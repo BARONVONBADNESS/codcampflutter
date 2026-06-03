@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'app.dart';
-import 'models/intel_item.dart';
-import 'models/patch_intel_item.dart';
-import 'models/plan_task.dart';
-import 'models/coaching_request.dart';
+import 'data/models/intel_item.dart';
+import 'data/models/patch_intel_item.dart';
+import 'data/models/plan_task.dart';
+import 'data/models/coaching_request.dart';
 import 'shared/widgets/request_line.dart';
 import 'shared/widgets/meta_pill.dart';
 import 'shared/widgets/info_chip.dart';
