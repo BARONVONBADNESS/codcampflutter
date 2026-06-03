@@ -2,7 +2,7 @@
 // Terminal-style animated preview summary
 
 import 'package:flutter/material.dart';
-import '../models/coaching_request_model.dart';
+import '../models/coaching_request.dart';
 import 'request_line.dart';
 import 'toggle_row.dart';
 

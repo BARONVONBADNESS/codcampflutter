@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'themes.dart';
+import 'screens/home_screen.dart';
+
 
 class CodCampApp extends StatelessWidget {
   const CodCampApp({super.key});
@@ -12,7 +14,7 @@ class CodCampApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       theme: CodCampTheme.lightTheme,
       darkTheme: CodCampTheme.darkTheme,
-      home: const MainShell(),
+      home: const HomeScreen(),
     );
   }
 }

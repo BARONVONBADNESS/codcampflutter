@@ -21,3 +21,20 @@ class CoachingRequest {
     required this.includeVodReview,
   });
 }
+
+/// FullRequest holds a list of CoachingRequest snapshots
+/// and provides convenient access to the latest state.
+/// Used by RequestSummary to display animated terminal-style previews.
+class FullRequest {
+  const FullRequest({
+    this.snapshots = const [],
+  });
+
+  final List<CoachingRequest> snapshots;
+
+  /// Returns the most recent CoachingRequest snapshot, or null if empty
+  CoachingRequest? get latest {
+    if (snapshots.isEmpty) return null;
+    return snapshots.last;
+  }
+}
