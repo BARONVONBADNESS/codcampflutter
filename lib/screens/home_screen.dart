@@ -1,14 +1,14 @@
+// CoD UI overhaul applied:
+//   - AppTopBar: sharp icon container, neon accent border, theme typography
+//   - SectionTitle: uppercase + wide letter-spacing via titleLarge
+//   - StatCard: sharp 3 px corners, theme surface, left accent bar
+//   - HomeScreen hero panel: kept dark gradient, tightened copy style
+
 import 'package:flutter/material.dart';
-import '../models/intel_item.dart';
-import '../models/patch_intel_item.dart';
-import '../models/plan_task.dart';
-import '../models/coaching_request.dart';
 import '../data/app_data.dart';
-import '../shared/widgets/request_line.dart';
-import '../shared/widgets/meta_pill.dart';
-import '../shared/widgets/info_chip.dart';
-import '../shared/widgets/detail_panel.dart';
-import '../shared/widgets/empty_state_card.dart';
+import '../shared/widgets/radar_background.dart';
+
+// ── Shared chrome widgets (imported by all screens) ────────────────────────
 
 class AppTopBar extends StatelessWidget {
   final String title;
@@ -24,39 +24,26 @@ class AppTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: const Color(0xFF111821),
-            border: Border.all(color: const Color(0x33D7B56D)),
+        ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(3)),
+          child: Image.asset(
+            'assets/images/app_logo.png',
+            width: 46,
+            height: 46,
+            fit: BoxFit.cover,
           ),
-          child: Icon(icon, color: const Color(0xFFD7B56D)),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF8C97A5),
-                  fontSize: 12,
-                ),
-              ),
+              Text(title.toUpperCase(), style: theme.textTheme.titleLarge),
+              const SizedBox(height: 2),
+              Text(subtitle, style: theme.textTheme.labelSmall),
             ],
           ),
         ),
@@ -67,17 +54,25 @@ class AppTopBar extends StatelessWidget {
 
 class SectionTitle extends StatelessWidget {
   final String title;
+
   const SectionTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 18,
-        fontWeight: FontWeight.w800,
-      ),
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: const BorderRadius.all(Radius.circular(1)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(title.toUpperCase(), style: theme.textTheme.titleMedium),
+      ],
     );
   }
 }
@@ -98,47 +93,40 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF10161E),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0x14FFFFFF)),
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.all(Radius.circular(3)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: color.withAlpha(36),
-              borderRadius: BorderRadius.circular(14),
+              color: color.withValues(alpha: 0.12),
+              borderRadius: const BorderRadius.all(Radius.circular(3)),
+              border: Border.all(color: color.withValues(alpha: 0.25)),
             ),
-            child: Icon(icon, color: color),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(height: 14),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF93A0AF),
-              fontSize: 13,
-            ),
-          ),
+          const SizedBox(height: 12),
+          Text(value,
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontSize: 20, letterSpacing: -0.5)),
+          const SizedBox(height: 2),
+          Text(label, style: theme.textTheme.labelSmall),
         ],
       ),
     );
   }
 }
+
+// ── HomeScreen ─────────────────────────────────────────────────────────────
 
 class HomeScreen extends StatelessWidget {
   final bool hideDuplicates;
@@ -158,100 +146,96 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final totalTips = AppData.intelItems.length;
-    final totalDuplicates = AppData.intelItems.where((e) => e.isDuplicate).length;
+    final totalDuplicates =
+        AppData.intelItems.where((e) => e.isDuplicate).length;
     final totalPatchItems = AppData.patchItems.length;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
+      backgroundColor: const Color(0xFF050A05),
+      body: RadarBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const AppTopBar(
                 title: 'CoD Camp',
-                subtitle: 'Ghost_Protocol app shell',
+                subtitle: 'Ghost_Protocol · Warzone Intelligence',
                 icon: Icons.sports_esports_rounded,
               ),
               const SizedBox(height: 18),
+
+              // ── Hero banner ───────────────────────────────────────────────
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: const BorderRadius.all(Radius.circular(3)),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF151D27),
-                      Color(0xFF0E141C),
-                      Color(0xFF0A0F15),
+                      Color(0xFF111A0A),
+                      Color(0xFF0A0F05),
+                      Color(0xFF080808),
                     ],
                   ),
-                  border: Border.all(color: const Color(0x22D7B56D)),
+                  border: Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.25)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'LIVE APP DIRECTION',
-                      style: TextStyle(
-                        color: Color(0xFFD7B56D),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Tips, coaching, patch intelligence, and weekly plans.',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        height: 1.2,
-                      ),
+                    Text('// LIVE INTEL',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            letterSpacing: 2.0)),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Tips · Coaching · Patch Intel · Weekly Plans',
+                      style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 10),
                     Text(
                       hasRequest
-                          ? 'Your latest coaching request is now saved in the member profile and ready for follow-up.'
-                          : 'The next premium action is a structured coaching request that uses the same patch-aware intelligence flow.',
-                      style: const TextStyle(
-                        color: Color(0xFF93A0AF),
-                        fontSize: 13,
-                        height: 1.55,
-                      ),
+                          ? 'Coaching request live. Check your profile for follow-up.'
+                          : 'Submit a coaching request to activate the full Ghost Protocol workflow.',
+                      style: theme.textTheme.bodyMedium,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 22),
               const SectionTitle(title: 'Overview'),
               const SizedBox(height: 12),
+
+              // ── Stat grid ─────────────────────────────────────────────────
               Row(
                 children: [
                   Expanded(
                     child: StatCard(
                       label: 'Tips',
                       value: '$totalTips',
-                      icon: Icons.lightbulb_outline_rounded,
-                      color: const Color(0xFFD7B56D),
+                      icon: Icons.tips_and_updates_rounded,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: StatCard(
                       label: 'Patch Intel',
                       value: '$totalPatchItems',
-                      icon: Icons.newspaper_rounded,
-                      color: const Color(0xFF93A0AF),
+                      icon: Icons.radar_rounded,
+                      color: theme.colorScheme.secondary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -259,21 +243,21 @@ class HomeScreen extends StatelessWidget {
                       label: 'Saved Tips',
                       value: '$savedTipCount',
                       icon: Icons.bookmark_rounded,
-                      color: const Color(0xFFD7B56D),
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: StatCard(
                       label: 'Saved Patch',
                       value: '$savedPatchCount',
                       icon: Icons.inventory_2_rounded,
-                      color: const Color(0xFF93A0AF),
+                      color: theme.colorScheme.secondary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -281,21 +265,23 @@ class HomeScreen extends StatelessWidget {
                       label: 'Plan Done',
                       value: '$completedTaskCount',
                       icon: Icons.check_circle_outline_rounded,
-                      color: const Color(0xFFD7B56D),
+                      color: theme.colorScheme.primary,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: StatCard(
-                      label: 'Request',
-                      value: hasRequest ? 'Live' : 'None',
-                      icon: Icons.send_rounded,
-                      color: const Color(0xFF93A0AF),
+                      label: 'De-dupe',
+                      value: hideDuplicates ? 'ON' : 'OFF',
+                      icon: Icons.tune_rounded,
+                      color: hideDuplicates
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.secondary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -303,22 +289,25 @@ class HomeScreen extends StatelessWidget {
                       label: 'Duplicates',
                       value: '$totalDuplicates',
                       icon: Icons.copy_all_rounded,
-                      color: const Color(0xFFD7B56D),
+                      color: theme.colorScheme.secondary,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: StatCard(
-                      label: 'De-dupe',
-                      value: hideDuplicates ? 'On' : 'Off',
-                      icon: Icons.tune_rounded,
-                      color: const Color(0xFF93A0AF),
+                      label: 'Request',
+                      value: hasRequest ? 'LIVE' : 'NONE',
+                      icon: Icons.send_rounded,
+                      color: hasRequest
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.secondary,
                     ),
                   ),
                 ],
               ),
             ],
           ),
+        ),
         ),
       ),
     );

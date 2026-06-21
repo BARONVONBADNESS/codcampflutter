@@ -1,4 +1,5 @@
 class CoachingRequest {
+  final String? requestId; // assigned by server; null if server unreachable
   final String mode;
   final String weakness;
   final String goal;
@@ -10,6 +11,7 @@ class CoachingRequest {
   final bool includeVodReview;
 
   const CoachingRequest({
+    this.requestId,
     required this.mode,
     required this.weakness,
     required this.goal,
@@ -20,4 +22,17 @@ class CoachingRequest {
     required this.includeLoadoutReview,
     required this.includeVodReview,
   });
+
+  CoachingRequest copyWithRequestId(String id) => CoachingRequest(
+    requestId:            id,
+    mode:                 mode,
+    weakness:             weakness,
+    goal:                 goal,
+    sessionLength:        sessionLength,
+    urgency:              urgency,
+    notes:                notes,
+    patchAware:           patchAware,
+    includeLoadoutReview: includeLoadoutReview,
+    includeVodReview:     includeVodReview,
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'themes.dart';
+import 'screens/login_screen.dart';
 
 class CodCampApp extends StatelessWidget {
   const CodCampApp({super.key});
@@ -10,9 +11,11 @@ class CodCampApp extends StatelessWidget {
       title: 'CoD Camp',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
-      theme: CodCampTheme.lightTheme,
+      theme: CodCampTheme.darkTheme,
       darkTheme: CodCampTheme.darkTheme,
-      home: const MainShell(),
+      // LoginScreen checks AuthService.isLoggedIn in initState and jumps
+      // straight to MainShell if already authenticated.
+      home: const LoginScreen(),
     );
   }
 }
