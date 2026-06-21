@@ -27,12 +27,12 @@ class DiscordOAuthConfig {
   /// For web builds it should redirect back to [webRedirectUri].
   /// For mobile builds it should redirect to [mobileRedirectUri].
   static const backendCallbackUrl =
-      'https://YOUR_DOMAIN/auth/discord/callback';
+      'https://codcampflutter.onrender.com/auth/discord/callback';
 
   /// Where Discord redirects after the user authorizes (must match OAuth2 settings).
   /// On web this is your app's URL; on mobile it's the custom scheme.
   static const webRedirectUri =
-      'https://YOUR_DOMAIN/auth/discord/callback';
+      'https://codcampflutter.onrender.com/auth/discord/callback';
   static const mobileRedirectUri = 'codcamp://auth';
 
   /// OAuth2 scopes — 'identify' gives us user ID + username.
