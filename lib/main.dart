@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'app.dart';
 import 'services/auth_service.dart';
 import 'services/discord_oauth.dart';
@@ -22,6 +23,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService.init();
   DiscordOAuthService.init(); // Start listening for OAuth deep links
+
+  // On web, check if we were redirected back with Discord user info in the URL.
+  if (kIsWeb) {
+    final uri = Uri.base;
+    if (uri.queryParameters.containsKey('discord_id') ||
+        uri.queryParameters.containsKey('code')) {
+      // Schedule handling after the app is running so the completer is set up.
+      Future.microtask(() => DiscordOAuthService.handleWebRedirect(uri));
+    }
+  }
+
   runApp(const CodCampApp());
 }
 

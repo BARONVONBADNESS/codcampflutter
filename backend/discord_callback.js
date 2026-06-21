@@ -43,10 +43,16 @@ app.use(express.json());
 // to the app's deep link with the user info as query params.
 
 app.get('/auth/discord/callback', async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
+
+  // Determine where to redirect: web origin (from state param) or mobile deep link
+  let returnBase = APP_SCHEME;
+  if (state && state.startsWith('web:')) {
+    returnBase = state.slice(4); // e.g. "http://localhost:60503"
+  }
 
   if (error || !code) {
-    return res.redirect(`${APP_SCHEME}?error=${error || 'no_code'}`);
+    return res.redirect(`${returnBase}?error=${error || 'no_code'}`);
   }
 
   try {
@@ -66,7 +72,7 @@ app.get('/auth/discord/callback', async (req, res) => {
     if (!tokenRes.ok) {
       const err = await tokenRes.text();
       console.error('Token exchange failed:', err);
-      return res.redirect(`${APP_SCHEME}?error=token_exchange_failed`);
+      return res.redirect(`${returnBase}?error=token_exchange_failed`);
     }
 
     const tokenData = await tokenRes.json();
@@ -77,7 +83,7 @@ app.get('/auth/discord/callback', async (req, res) => {
     });
 
     if (!userRes.ok) {
-      return res.redirect(`${APP_SCHEME}?error=user_fetch_failed`);
+      return res.redirect(`${returnBase}?error=user_fetch_failed`);
     }
 
     const user = await userRes.json();
@@ -90,11 +96,11 @@ app.get('/auth/discord/callback', async (req, res) => {
     });
 
     console.log(`Discord login: ${user.username} (${user.id})`);
-    return res.redirect(`${APP_SCHEME}?${params.toString()}`);
+    return res.redirect(`${returnBase}?${params.toString()}`);
 
   } catch (err) {
     console.error('OAuth callback error:', err);
-    return res.redirect(`${APP_SCHEME}?error=server_error`);
+    return res.redirect(`${returnBase}?error=server_error`);
   }
 });
 

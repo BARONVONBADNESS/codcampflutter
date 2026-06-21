@@ -114,12 +114,17 @@ class DiscordOAuthService {
   static Future<DiscordUser?> authenticate() async {
     _authCompleter = Completer<DiscordUser?>();
 
-    final uri = DiscordOAuthConfig.buildAuthorizeUri();
+    // On web, pass our origin in the state param so the backend knows
+    // to redirect back here (instead of codcamp:// which browsers can't handle).
+    final webOrigin = kIsWeb ? Uri.base.origin : null;
+    final uri = DiscordOAuthConfig.buildAuthorizeUri(
+      state: kIsWeb ? 'web:$webOrigin' : null,
+    );
 
     if (kIsWeb) {
-      // On web: redirect the current window to Discord.
-      // When Discord redirects back, main() checks the URL for ?code=...
-      // and calls handleWebRedirect().
+      // On web: open Discord auth. After authorization, Discord redirects to
+      // the backend, which exchanges the code and redirects back to our web
+      // origin with ?discord_id=...&username=... in the URL.
       await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
     } else {
       // On mobile: open Discord in the system browser.
