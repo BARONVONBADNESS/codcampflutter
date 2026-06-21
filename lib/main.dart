@@ -25,12 +25,18 @@ void main() async {
   DiscordOAuthService.init(); // Start listening for OAuth deep links
 
   // On web, check if we were redirected back with Discord user info in the URL.
+  // The full page reload kills the auth completer, so we log in directly here.
   if (kIsWeb) {
     final uri = Uri.base;
-    if (uri.queryParameters.containsKey('discord_id') ||
-        uri.queryParameters.containsKey('code')) {
-      // Schedule handling after the app is running so the completer is set up.
-      Future.microtask(() => DiscordOAuthService.handleWebRedirect(uri));
+    final discordId = uri.queryParameters['discord_id'];
+    final username = uri.queryParameters['username'];
+    if (discordId != null && username != null) {
+      await AuthService.loginWithDiscord(
+        discordId: discordId,
+        discordUsername: uri.queryParameters['global_name']?.isNotEmpty == true
+            ? uri.queryParameters['global_name']!
+            : username,
+      );
     }
   }
 
