@@ -15,6 +15,7 @@ class UserRecord {
   final String? email;
   final String? discordId;
   final String? discordUsername;
+  final String? discordAvatar;   // avatar hash from Discord
 
   const UserRecord({
     required this.userId,
@@ -22,11 +23,19 @@ class UserRecord {
     this.email,
     this.discordId,
     this.discordUsername,
+    this.discordAvatar,
   });
 
   /// Display name — Discord username if present, callsign if not.
   String get displayName =>
       discordUsername ?? callsign ?? 'GHOSTCAMPER';
+
+  /// Full Discord avatar URL, or null if no custom avatar.
+  String? get discordAvatarUrl {
+    if (discordId == null || discordAvatar == null) return null;
+    final ext = discordAvatar!.startsWith('a_') ? 'gif' : 'png';
+    return 'https://cdn.discordapp.com/avatars/$discordId/$discordAvatar.$ext?size=256';
+  }
 
   /// True when both login methods have been used on this device.
   bool get hasBothMethods => discordId != null && callsign != null;
@@ -55,6 +64,7 @@ class AuthService {
   static const _kEmail           = 'auth_email';
   static const _kDiscordId       = 'auth_discord_id';
   static const _kDiscordUsername = 'auth_discord_username';
+  static const _kDiscordAvatar  = 'auth_discord_avatar';
   static const _kHasUsedApp      = 'auth_has_used_app';
   static const _kHasUsedDiscord  = 'auth_has_used_discord';
   static const _kDeliveryPref    = 'auth_delivery_pref';
@@ -83,6 +93,7 @@ class AuthService {
         email:           p.getString(_kEmail),
         discordId:       p.getString(_kDiscordId),
         discordUsername: p.getString(_kDiscordUsername),
+        discordAvatar:   p.getString(_kDiscordAvatar),
       );
     }
   }
@@ -134,6 +145,7 @@ class AuthService {
       email:           email,
       discordId:       p.getString(_kDiscordId),
       discordUsername: p.getString(_kDiscordUsername),
+      discordAvatar:   p.getString(_kDiscordAvatar),
     );
 
     // Default delivery to app when this is the only method used so far.
@@ -149,6 +161,7 @@ class AuthService {
   static Future<void> loginWithDiscord({
     required String discordId,
     required String discordUsername,
+    String? discordAvatar,
   }) async {
     final p      = _prefs!;
     final userId = p.getString(_kUserId) ?? _generateId();
@@ -159,6 +172,7 @@ class AuthService {
       p.setString(_kUserId,          userId),
       p.setString(_kDiscordId,       discordId),
       p.setString(_kDiscordUsername, discordUsername),
+      if (discordAvatar != null) p.setString(_kDiscordAvatar, discordAvatar),
       p.setBool  (_kHasUsedDiscord,  true),
     ]);
 
@@ -170,6 +184,7 @@ class AuthService {
       email:           p.getString(_kEmail),
       discordId:       discordId,
       discordUsername: discordUsername,
+      discordAvatar:   discordAvatar,
     );
 
     // Default delivery to discord when this is the only method used so far.

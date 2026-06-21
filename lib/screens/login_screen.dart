@@ -717,6 +717,7 @@ class _LoginScreenState extends State<LoginScreen>
       await AuthService.loginWithDiscord(
         discordId:       discordUser.id,
         discordUsername: discordUser.displayName,
+        discordAvatar:   discordUser.avatar,
       );
 
       if (!mounted) return;

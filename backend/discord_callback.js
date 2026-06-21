@@ -90,9 +90,11 @@ app.get('/auth/discord/callback', async (req, res) => {
 
     // Redirect to the app with user info
     const params = new URLSearchParams({
-      discord_id:  user.id,
-      username:    user.username,
-      global_name: user.global_name || '',
+      discord_id:   user.id,
+      username:     user.username,
+      global_name:  user.global_name || '',
+      avatar:       user.avatar || '',
+      banner_color: user.accent_color ? user.accent_color.toString(16) : '',
     });
 
     console.log(`Discord login: ${user.username} (${user.id})`);

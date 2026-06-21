@@ -335,6 +335,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .where((p) => widget.savedPatchIds.contains(p.id))
         .toList();
 
+    final user = AuthService.currentUser;
+    final displayName = user?.displayName ?? 'GHOSTCAMPER';
+    final avatarUrl = user?.discordAvatarUrl;
+    final isDiscord = user?.discordId != null;
+
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
@@ -345,9 +350,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
 
               // ── Header ──────────────────────────────────────────────────
-              const AppTopBar(
+              AppTopBar(
                 title: 'Operative Profile',
-                subtitle: 'Ghost_Protocol · Active',
+                subtitle: isDiscord
+                    ? '${user!.discordUsername} · Active'
+                    : 'Ghost_Protocol · Active',
                 icon: Icons.person_rounded,
               ),
 
@@ -366,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
 
-                    // Avatar
+                    // Avatar — Discord profile picture or fallback icon
                     Stack(children: [
                       Container(
                         width: 68, height: 68,
@@ -381,8 +388,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 blurRadius: 12, spreadRadius: 1)
                           ],
                         ),
-                        child: const Icon(Icons.person_outline_rounded,
-                            color: _lime, size: 34),
+                        child: avatarUrl != null
+                            ? ClipOval(
+                                child: Image.network(
+                                  avatarUrl,
+                                  width: 64, height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.person_outline_rounded,
+                                          color: _lime, size: 34),
+                                ),
+                              )
+                            : const Icon(Icons.person_outline_rounded,
+                                color: _lime, size: 34),
                       ),
                       Positioned(
                         bottom: 2, right: 2,
@@ -403,11 +421,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(children: [
-                          const Text('GHOSTCAMPER',
-                              style: TextStyle(color: Colors.white,
-                                  fontSize: 20, fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0)),
-                          const Spacer(),
+                          Flexible(
+                            child: Text(displayName.toUpperCase(),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white,
+                                    fontSize: 20, fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.0)),
+                          ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 3),
@@ -424,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ]),
                         const SizedBox(height: 3),
-                        Text('Tier 3 Recruit',
+                        Text(isDiscord ? 'Discord Linked · Tier 3 Recruit' : 'Tier 3 Recruit',
                             style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.40),
                                 fontSize: 11)),

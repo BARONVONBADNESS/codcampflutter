@@ -31,11 +31,13 @@ void main() async {
     final discordId = uri.queryParameters['discord_id'];
     final username = uri.queryParameters['username'];
     if (discordId != null && username != null) {
+      final avatar = uri.queryParameters['avatar'];
       await AuthService.loginWithDiscord(
         discordId: discordId,
         discordUsername: uri.queryParameters['global_name']?.isNotEmpty == true
             ? uri.queryParameters['global_name']!
             : username,
+        discordAvatar: (avatar != null && avatar.isNotEmpty) ? avatar : null,
       );
     }
   }
