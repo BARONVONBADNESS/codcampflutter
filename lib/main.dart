@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'app.dart';
+import 'services/auth_service.dart';
+import 'services/discord_oauth.dart';
 import 'data/app_data.dart';
 import 'data/models/intel_item.dart';
 import 'data/models/patch_intel_item.dart';
@@ -12,8 +15,35 @@ import 'screens/weekly_plan_screen.dart';
 import 'screens/tip_detail_screen.dart';
 import 'screens/patch_detail_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/loadout_screen.dart';
+import 'services/tips_service.dart';
+import 'services/patch_service.dart';
+import 'services/coaching_service.dart';
+import 'services/loadout_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.init();
+  DiscordOAuthService.init(); // Start listening for OAuth deep links
+
+  // On web, check if we were redirected back with Discord user info in the URL.
+  // The full page reload kills the auth completer, so we log in directly here.
+  if (kIsWeb) {
+    final uri = Uri.base;
+    final discordId = uri.queryParameters['discord_id'];
+    final username = uri.queryParameters['username'];
+    if (discordId != null && username != null) {
+      final avatar = uri.queryParameters['avatar'];
+      await AuthService.loginWithDiscord(
+        discordId: discordId,
+        discordUsername: uri.queryParameters['global_name']?.isNotEmpty == true
+            ? uri.queryParameters['global_name']!
+            : username,
+        discordAvatar: (avatar != null && avatar.isNotEmpty) ? avatar : null,
+      );
+    }
+  }
+
   runApp(const CodCampApp());
 }
 
@@ -26,121 +56,261 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
-
-  // Tip state
-  IntelItem? _openTip;
-  String? _tipReaction;
   final Set<String> _savedTipIds = {};
-
-  // Patch state
-  PatchIntelItem? _openPatch;
+  final Map<String, String?> _selectedReactions = {};
   final Set<String> _savedPatchIds = {};
-
-  // Weekly plan state
-  final Set<String> _completedTaskIds = {};
-
-  // Coaching history
+  final Set<String> _savedLoadoutIds = {};
+  final Set<String> _completedPlanTaskIds = {};
   final List<CoachingRequest> _coachingHistory = [];
 
-  void _openTipDetail(IntelItem item) => setState(() => _openTip = item);
-  void _closeTipDetail() => setState(() { _openTip = null; _tipReaction = null; });
-  void _toggleSavedTip(String id) => setState(() => _savedTipIds.contains(id) ? _savedTipIds.remove(id) : _savedTipIds.add(id));
+  // Live data — null = server unreachable, uses static fallback.
+  List<IntelItem>? _liveTips;
+  List<PatchIntelItem>? _livePatches;
+  List<Loadout> _loadouts = [];
 
-  void _openPatchDetail(PatchIntelItem item) => setState(() => _openPatch = item);
-  void _closePatchDetail() => setState(() => _openPatch = null);
-  void _toggleSavedPatch(String id) => setState(() => _savedPatchIds.contains(id) ? _savedPatchIds.remove(id) : _savedPatchIds.add(id));
+  @override
+  void initState() {
+    super.initState();
+    _loadLiveData();
+  }
 
-  void _toggleTask(String id) => setState(() => _completedTaskIds.contains(id) ? _completedTaskIds.remove(id) : _completedTaskIds.add(id));
+  Future<void> _loadLiveData() async {
+    final userId = AuthService.userId ?? '';
 
-  void _submitCoaching(CoachingRequest req) => setState(() => _coachingHistory.add(req));
+    final results = await Future.wait([
+      TipsService.fetchLiveTips(),
+      PatchService.fetchLivePatches(),
+      LoadoutService.fetchLoadouts(),
+      if (userId.isNotEmpty) CoachingService.fetchHistory(userId),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      final tips    = results[0] as List<IntelItem>;
+      final patches = results[1] as List<PatchIntelItem>;
+      final loadouts = results[2] as List<Loadout>;
+      _liveTips    = tips.isNotEmpty    ? tips    : null;
+      _livePatches = patches.isNotEmpty ? patches : null;
+      _loadouts    = loadouts;
+
+      // Restore coaching history from server — merge with any already in memory.
+      if (results.length > 3) {
+        final serverHistory = results[3] as List<CoachingRequest>;
+        final existingIds = _coachingHistory
+            .where((r) => r.requestId != null)
+            .map((r) => r.requestId)
+            .toSet();
+        for (final req in serverHistory) {
+          if (req.requestId != null && !existingIds.contains(req.requestId)) {
+            _coachingHistory.add(req);
+          }
+        }
+      }
+    });
+  }
+
+  void _toggleSaved(String id) {
+    setState(() {
+      if (_savedTipIds.contains(id)) {
+        _savedTipIds.remove(id);
+      } else {
+        _savedTipIds.add(id);
+      }
+    });
+  }
+
+  void _setReaction(String id, String? reaction) {
+    setState(() {
+      if (reaction == null) {
+        _selectedReactions.remove(id);
+      } else {
+        _selectedReactions[id] = reaction;
+      }
+    });
+  }
+
+  void _toggleSavedPatch(String id) {
+    setState(() {
+      if (_savedPatchIds.contains(id)) {
+        _savedPatchIds.remove(id);
+      } else {
+        _savedPatchIds.add(id);
+      }
+    });
+  }
+
+  void _toggleSavedLoadout(String id) {
+    setState(() {
+      if (_savedLoadoutIds.contains(id)) {
+        _savedLoadoutIds.remove(id);
+      } else {
+        _savedLoadoutIds.add(id);
+      }
+    });
+  }
+
+  void _togglePlanTask(String id) {
+    setState(() {
+      if (_completedPlanTaskIds.contains(id)) {
+        _completedPlanTaskIds.remove(id);
+      } else {
+        _completedPlanTaskIds.add(id);
+      }
+    });
+  }
+
+  void _saveCoachingRequest(CoachingRequest request) {
+    setState(() {
+      _coachingHistory.add(request);
+    });
+  }
+
+  void _deleteCoachingRequest(String requestId) {
+    CoachingService.deleteRequest(requestId).then((ok) {
+      if (ok && mounted) {
+        setState(() {
+          _coachingHistory.removeWhere((r) => r.requestId == requestId);
+        });
+      }
+    });
+  }
+
+  void _openTipDetail(BuildContext context, IntelItem item) {
+    final visibleItems = AppData.intelItems.toList();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TipDetailScreen(
+          item: item,
+          visibleItems: visibleItems,
+          isSaved: _savedTipIds.contains(item.id),
+          selectedReaction: _selectedReactions[item.id],
+          onToggleSaved: () => _toggleSaved(item.id),
+          onSetReaction: (r) => _setReaction(item.id, r),
+          onOpenTip: (next) => _openTipDetail(context, next),
+        ),
+      ),
+    );
+  }
+
+  void _openPatchDetail(BuildContext context, PatchIntelItem item) {
+    final allPatches = _livePatches ?? AppData.patchItems.toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PatchDetailScreen(
+          item: item,
+          relatedItems: allPatches
+              .where((e) => e.id != item.id && e.type == item.type)
+              .take(3)
+              .toList(),
+          isSaved: _savedPatchIds.contains(item.id),
+          onToggleSaved: () => _toggleSavedPatch(item.id),
+          onOpenPatch: (next) => _openPatchDetail(context, next),
+        ),
+      ),
+    );
+  }
+
+  /// Returns live Discord tips if the server is reachable, otherwise static fallback.
+  List<IntelItem> get _visibleTips {
+    return _liveTips ?? AppData.intelItems.toList();
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    // Detail screen overlays
-    if (_openTip != null) {
-      return TipDetailScreen(
-        item: _openTip!,
-        visibleItems: AppData.intelItems,
-        isSaved: _savedTipIds.contains(_openTip!.id),
-        selectedReaction: _tipReaction,
-        onToggleSaved: () => _toggleSavedTip(_openTip!.id),
-        onSetReaction: (r) => setState(() => _tipReaction = r),
-        onOpenTip: _openTipDetail,
-      );
-    }
+    final latestRequest =
+        _coachingHistory.isNotEmpty ? _coachingHistory.last : null;
 
-    if (_openPatch != null) {
-      return PatchDetailScreen(
-        item: _openPatch!,
-        relatedItems: AppData.patchItems
-            .where((p) => p.id != _openPatch!.id && p.type == _openPatch!.type)
-            .take(3)
-            .toList(),
-        isSaved: _savedPatchIds.contains(_openPatch!.id),
-        onToggleSaved: () => _toggleSavedPatch(_openPatch!.id),
-        onOpenPatch: _openPatchDetail,
-      );
-    }
-
-    // Main shell
-    final screens = [
+    final pages = [
       HomeScreen(
-        intelItems: AppData.intelItems,
-        patchItems: AppData.patchItems,
-        savedTipIds: _savedTipIds,
-        savedPatchIds: _savedPatchIds,
-        completedTaskIds: _completedTaskIds,
-        onOpenTip: _openTipDetail,
-        onOpenPatch: _openPatchDetail,
+        savedTipCount: _savedTipIds.length,
+        savedLoadoutCount: _savedLoadoutIds.length,
+        completedTaskCount: _completedPlanTaskIds.length,
+        hasRequest: _coachingHistory.isNotEmpty,
       ),
       CoachingRequestScreen(
-        onSubmit: _submitCoaching,
+        latestRequest: latestRequest,
+        onSubmitRequest: _saveCoachingRequest,
       ),
       TipsFeedScreen(
-        items: AppData.intelItems,
+        items: _visibleTips,
         savedTipIds: _savedTipIds,
-        onToggleSaved: _toggleSavedTip,
-        onOpenTip: _openTipDetail,
+        onToggleSaved: _toggleSaved,
+        onOpenTip: (item) => _openTipDetail(context, item),
+        isLive: _liveTips != null,
       ),
       PatchIntelScreen(
-        items: AppData.patchItems,
+        items: _livePatches ?? AppData.patchItems.toList(),
         savedPatchIds: _savedPatchIds,
         onToggleSaved: _toggleSavedPatch,
-        onOpenPatch: _openPatchDetail,
+        onOpenPatch: (item) => _openPatchDetail(context, item),
+        isLive: _livePatches != null,
       ),
       WeeklyPlanScreen(
-        completedTaskIds: _completedTaskIds,
+        completedTaskIds: _completedPlanTaskIds,
         savedPatchIds: _savedPatchIds,
-        onToggleTask: _toggleTask,
+        onToggleTask: _togglePlanTask,
       ),
       ProfileScreen(
         savedTipIds: _savedTipIds,
-        savedPatchIds: _savedPatchIds,
-        allTips: AppData.intelItems,
-        allPatches: AppData.patchItems,
+        savedLoadoutIds: _savedLoadoutIds,
+        allTips: AppData.intelItems.toList(),
+        allLoadouts: _loadouts,
         coachingHistory: _coachingHistory,
-        onToggleSavedTip: _toggleSavedTip,
-        onToggleSavedPatch: _toggleSavedPatch,
-        onOpenTip: _openTipDetail,
-        onOpenPatch: _openPatchDetail,
+        onToggleSavedTip: _toggleSaved,
+        onToggleSavedLoadout: _toggleSavedLoadout,
+        onOpenTip: (item) => _openTipDetail(context, item),
+        onDeleteCoachingRequest: _deleteCoachingRequest,
+      ),
+      LoadoutScreen(
+        savedLoadoutIds: _savedLoadoutIds,
+        onToggleSaved: _toggleSavedLoadout,
       ),
     ];
 
     return Scaffold(
-      body: screens[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF091018),
+        selectedItemColor: const Color(0xFFD7B56D),
+        unselectedItemColor: const Color(0xFF687483),
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
         type: BottomNavigationBarType.fixed,
+        onTap: (index) => setState(() => _currentIndex = index),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_esports_rounded), label: 'Coaching'),
-          BottomNavigationBarItem(icon: Icon(Icons.tips_and_updates_rounded), label: 'Tips'),
-          BottomNavigationBarItem(icon: Icon(Icons.radar_rounded), label: 'Patch'),
-          BottomNavigationBarItem(icon: Icon(Icons.event_note_rounded), label: 'Plan'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.send_rounded),
+            label: 'Request',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb_outline_rounded),
+            label: 'Tips',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.newspaper_rounded),
+            label: 'Patch',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note_rounded),
+            label: 'Plan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline_rounded),
+            label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.tune_rounded),
+            label: 'Loadouts',
+          ),
         ],
       ),
     );
   }
 }
+

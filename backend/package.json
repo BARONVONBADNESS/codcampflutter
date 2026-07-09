@@ -1,0 +1,13 @@
+{
+  "name": "codcamp-discord-oauth",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node discord_callback.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2"
+  }
+}

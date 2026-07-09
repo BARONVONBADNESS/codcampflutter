@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'themes.dart';
-import 'screens/home_screen.dart';
-
+import 'screens/splash_screen.dart';
 
 class CodCampApp extends StatelessWidget {
   const CodCampApp({super.key});
@@ -12,9 +11,11 @@ class CodCampApp extends StatelessWidget {
       title: 'CoD Camp',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
-      theme: CodCampTheme.lightTheme,
+      theme: CodCampTheme.darkTheme,
       darkTheme: CodCampTheme.darkTheme,
-      home: const HomeScreen(),
+      // SplashScreen plays the radar/skull animation, then routes to
+      // MainShell (if already authenticated) or LoginScreen.
+      home: const SplashScreen(),
     );
   }
 }

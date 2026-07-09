@@ -1,8 +1,95 @@
 import 'package:flutter/material.dart';
-import '../../data/app_data.dart';
-import '../../models/coaching_request.dart';
-import '../../shared/widgets/selection_card.dart';
-import '../../shared/widgets/settings_switch_tile.dart';
+import '../data/models/coaching_request.dart';
+import '../services/coaching_service.dart';
+import '../shared/widgets/radar_background.dart';
+import '../shared/widgets/request_line.dart';
+import 'home_screen.dart'; // AppTopBar
+import 'chat_screen.dart';
+
+const _lime = Color(0xFFA6FF2E);
+const _bg   = Color(0xFF050A05);
+const _surf = Color(0xFF0C130C);
+
+// ── Game-mode definitions ─────────────────────────────────────────────────────
+
+class _GameMode {
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color accent;
+
+  const _GameMode({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.accent,
+  });
+}
+
+class _ModeCategory {
+  final String title;
+  final Color accent;
+  final List<_GameMode> modes;
+
+  const _ModeCategory({
+    required this.title,
+    required this.accent,
+    required this.modes,
+  });
+}
+
+const _bo7Accent = Color(0xFFFF9F2E);
+const _wzAccent  = Color(0xFF6E9BFF);
+const _foAccent  = Color(0xFFB07EFF);
+
+const _categories = <_ModeCategory>[
+  // ── BO7 MULTIPLAYER ─────────────────────────────────────────────
+  _ModeCategory(
+    title: 'BLACK OPS 7 — MULTIPLAYER',
+    accent: _bo7Accent,
+    modes: [
+      _GameMode(id: 'bo7_tdm',        label: 'TEAM DEATHMATCH',   icon: Icons.groups_rounded,           accent: _bo7Accent),
+      _GameMode(id: 'bo7_domination',  label: 'DOMINATION',        icon: Icons.flag_rounded,             accent: _bo7Accent),
+      _GameMode(id: 'bo7_hardpoint',   label: 'HARDPOINT',         icon: Icons.my_location_rounded,      accent: _bo7Accent),
+      _GameMode(id: 'bo7_snd',         label: 'SEARCH & DESTROY',  icon: Icons.gps_fixed_rounded,        accent: _bo7Accent),
+      _GameMode(id: 'bo7_control',     label: 'CONTROL',           icon: Icons.shield_rounded,           accent: _bo7Accent),
+      _GameMode(id: 'bo7_kill_order',  label: 'KILL ORDER',        icon: Icons.track_changes_rounded,    accent: _bo7Accent),
+      _GameMode(id: 'bo7_confirmed',   label: 'KILL CONFIRMED',    icon: Icons.verified_rounded,         accent: _bo7Accent),
+      _GameMode(id: 'bo7_ffa',         label: 'FREE-FOR-ALL',      icon: Icons.person_rounded,           accent: _bo7Accent),
+      _GameMode(id: 'bo7_overload',    label: 'OVERLOAD',          icon: Icons.bolt_rounded,             accent: _bo7Accent),
+      _GameMode(id: 'bo7_gunfight',    label: 'GUNFIGHT',          icon: Icons.flash_on_rounded,         accent: _bo7Accent),
+      _GameMode(id: 'bo7_skirmish',    label: 'SKIRMISH (20v20)',  icon: Icons.military_tech_rounded,    accent: _bo7Accent),
+    ],
+  ),
+
+  // ── BO7 FACE OFF ────────────────────────────────────────────────
+  _ModeCategory(
+    title: 'BLACK OPS 7 — FACE OFF',
+    accent: _foAccent,
+    modes: [
+      _GameMode(id: 'fo_tdm',         label: 'FACE OFF: TDM',         icon: Icons.groups_rounded,        accent: _foAccent),
+      _GameMode(id: 'fo_domination',   label: 'FACE OFF: DOMINATION',  icon: Icons.flag_rounded,          accent: _foAccent),
+      _GameMode(id: 'fo_kill_order',   label: 'FACE OFF: KILL ORDER',  icon: Icons.track_changes_rounded, accent: _foAccent),
+      _GameMode(id: 'fo_confirmed',    label: 'FACE OFF: CONFIRMED',   icon: Icons.verified_rounded,      accent: _foAccent),
+    ],
+  ),
+
+  // ── WARZONE ─────────────────────────────────────────────────────
+  _ModeCategory(
+    title: 'WARZONE',
+    accent: _wzAccent,
+    modes: [
+      _GameMode(id: 'wz_br',          label: 'BATTLE ROYALE',        icon: Icons.public_rounded,        accent: _wzAccent),
+      _GameMode(id: 'wz_resurgence',   label: 'RESURGENCE',          icon: Icons.refresh_rounded,       accent: _wzAccent),
+      _GameMode(id: 'wz_bo_royale',    label: 'BLACK OPS ROYALE',    icon: Icons.star_rounded,          accent: _wzAccent),
+      _GameMode(id: 'wz_ranked_resurg',label: 'RANKED RESURGENCE',   icon: Icons.emoji_events_rounded,  accent: _wzAccent),
+      _GameMode(id: 'wz_clash',        label: 'CLASH',               icon: Icons.whatshot_rounded,       accent: _wzAccent),
+      _GameMode(id: 'wz_plunder',      label: 'PLUNDER',             icon: Icons.attach_money_rounded,  accent: _wzAccent),
+    ],
+  ),
+];
+
+// ── Screen ────────────────────────────────────────────────────────────────────
 
 class CoachingRequestScreen extends StatefulWidget {
   final CoachingRequest? latestRequest;
@@ -19,232 +106,115 @@ class CoachingRequestScreen extends StatefulWidget {
 }
 
 class _CoachingRequestScreenState extends State<CoachingRequestScreen> {
-  final TextEditingController notesController = TextEditingController();
-  String selectedMode = 'Ranked Resurgence';
-  String selectedWeakness = 'Positioning';
-  String selectedGoal = 'Win more ranked fights';
-  String selectedSession = '60 min';
-  String selectedUrgency = 'This week';
-  bool patchAware = true;
-  bool includeLoadoutReview = true;
-  bool includeVodReview = false;
+  int get _totalModes =>
+      _categories.fold(0, (sum, cat) => sum + cat.modes.length);
 
-  final List<String> modes = const [
-    'Ranked Resurgence', 'Warzone BR', 'Multiplayer Ranked', 'Public Match Practice',
-  ];
-  final List<String> weaknesses = const [
-    'Positioning', 'Audio awareness', 'Aim consistency', 'Decision making', 'Rotations', 'Loadout choice',
-  ];
-  final List<String> goals = const [
-    'Win more ranked fights', 'Improve KD', 'Climb rank faster', 'Stop losing late game', 'Learn patch-aware loadouts',
-  ];
-  final List<String> sessions = const [
-    '30 min', '60 min', '90 min', '120 min',
-  ];
-  final List<String> urgencies = const [
-    'Tonight', 'This week', 'Next session', 'No rush',
-  ];
+  void _selectMode(_GameMode mode) {
+    // Don't submit to server yet — wait until the user sends their first
+    // message so we never create empty coaching requests.
+    final request = CoachingRequest(mode: mode.label);
 
-  void submitRequest() {
-    final request = CoachingRequest(
-      mode: selectedMode,
-      weakness: selectedWeakness,
-      goal: selectedGoal,
-      sessionLength: selectedSession,
-      urgency: selectedUrgency,
-      notes: notesController.text.trim(),
-      patchAware: patchAware,
-      includeLoadoutReview: includeLoadoutReview,
-      includeVodReview: includeVodReview,
-    );
-    widget.onSubmitRequest(request);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF10161E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Request submitted', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Your coaching request has been saved to your member profile.',
-          style: TextStyle(color: Color(0xFF93A0AF), height: 1.5),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          request: request,
+          onRequestCreated: widget.onSubmitRequest,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Done', style: TextStyle(color: Color(0xFFD7B56D))),
-          ),
-        ],
       ),
     );
   }
 
   @override
-  void dispose() {
-    notesController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final latestRequest = widget.latestRequest;
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+      backgroundColor: _bg,
+      body: RadarBackground(
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppTopBar(
-                title: 'Request Coaching',
-                subtitle: 'Patch-aware session request',
-                icon: Icons.send_rounded,
-              ),
-              const SizedBox(height: 18),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF151D27), Color(0xFF0E141C), Color(0xFF0A0F15)],
-                  ),
-                  border: Border.all(color: const Color(0x22D7B56D)),
-                ),
-                child: const Column(
+              // ── Header ──────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('MEMBER REQUEST',
-                      style: TextStyle(color: Color(0xFFD7B56D), fontSize: 11,
-                        fontWeight: FontWeight.w800, letterSpacing: 1.1)),
-                    SizedBox(height: 12),
-                const SectionTitle(title: 'Latest Request'),
-                const SizedBox(height: 12),
-                CoachingSummaryCard(request: latestRequest),
-                const SizedBox(height: 20),
-              ],
-              const SectionTitle(title: 'Session Setup'),
-              const SizedBox(height: 12),
-              SelectionCard(
-                title: 'Mode', value: selectedMode,
-                icon: Icons.sports_esports_rounded, accent: const Color(0xFFD7B56D),
-                onTap: () async {
-                  final value = await _showPicker(context, 'Select mode', modes);
-                  if (value != null) setState(() => selectedMode = value);
-                },
-              ),
-              const SizedBox(height: 12),
-              SelectionCard(
-                title: 'Main weakness', value: selectedWeakness,
-                icon: Icons.warning_amber_rounded, accent: const Color(0xFF93A0AF),
-                onTap: () async {
-                  final value = await _showPicker(context, 'Select weakness', weaknesses);
-                  if (value != null) setState(() => selectedWeakness = value);
-                },
-              ),
-              const SizedBox(height: 12),
-              SelectionCard(
-                title: 'Goal', value: selectedGoal,
-                icon: Icons.flag_rounded, accent: const Color(0xFFD7B56D),
-                onTap: () async {
-                  final value = await _showPicker(context, 'Select goal', goals);
-                  if (value != null) setState(() => selectedGoal = value);
-                },
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: SelectionCard(
-                      title: 'Session', value: selectedSession,
-                      icon: Icons.timer_outlined, accent: const Color(0xFF93A0AF),
-                      onTap: () async {
-                        final value = await _showPicker(context, 'Session length', sessions);
-                        if (value != null) setState(() => selectedSession = value);
-                      },
+                    const AppTopBar(
+                      title: 'Request Coaching',
+                      subtitle: 'Select a game mode to start',
+                      icon: Icons.sports_esports_rounded,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SelectionCard(
-                      title: 'Urgency', value: selectedUrgency,
-                      icon: Icons.bolt_rounded, accent: const Color(0xFFD7B56D),
-                      onTap: () async {
-                        final value = await _showPicker(context, 'Select urgency', urgencies);
-                        if (value != null) setState(() => selectedUrgency = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const SectionTitle(title: 'Request Options'),
-              const SizedBox(height: 12),
-              SettingsSwitchTile(
-                title: 'Patch-aware coaching',
-                subtitle: 'Use live patch summaries and weapon changes in the session.',
-                value: patchAware, icon: Icons.newspaper_rounded,
-                accent: const Color(0xFFD7B56D),
-                onChanged: (value) => setState(() => patchAware = value),
-              ),
-              const SizedBox(height: 12),
-              SettingsSwitchTile(
-                title: 'Include loadout review',
-                subtitle: 'Add weapon and attachment recommendations.',
-                value: includeLoadoutReview, icon: Icons.track_changes_rounded,
-                accent: const Color(0xFF93A0AF),
-                onChanged: (value) => setState(() => includeLoadoutReview = value),
-              ),
-              const SizedBox(height: 12),
-              SettingsSwitchTile(
-                title: 'Include VOD review',
-                subtitle: 'Prepare the request for gameplay breakdown support.',
-                value: includeVodReview, icon: Icons.ondemand_video_rounded,
-                accent: const Color(0xFFD7B56D),
-                onChanged: (value) => setState(() => includeVodReview = value),
-              ),
-              const SizedBox(height: 24),
-              const SectionTitle(title: 'Extra Notes'),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F141B),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0x14FFFFFF)),
-                ),
-                child: TextField(
-                  controller: notesController,
-                  maxLines: 5,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(16),
-                    hintText: 'Example: I keep losing rooftop fights and I want a simple ranked setup for this week.',
-                    hintStyle: TextStyle(color: Color(0xFF7D8997)),
-                    border: InputBorder.none,
-                  ),
+                    const SizedBox(height: 12),
+                    Row(children: [
+                      Text('CHOOSE YOUR MODE',
+                          style: TextStyle(
+                              color: _lime.withValues(alpha: 0.45),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 2.5)),
+                      const Spacer(),
+                      Text('$_totalModes AVAILABLE',
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              fontSize: 9,
+                              letterSpacing: 1.0)),
+                    ]),
+                    const SizedBox(height: 8),
+                    Container(height: 1, color: _lime.withValues(alpha: 0.06)),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              const SectionTitle(title: 'Request Preview'),
-              const SizedBox(height: 12),
-              CoachingPreviewCard(
-                mode: selectedMode, weakness: selectedWeakness, goal: selectedGoal,
-                sessionLength: selectedSession, urgency: selectedUrgency,
-                patchAware: patchAware, includeLoadoutReview: includeLoadoutReview,
-                includeVodReview: includeVodReview, notes: notesController.text,
-              ),
-              const SizedBox(height: 18),
-              ElevatedButton.icon(
-                onPressed: submitRequest,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD7B56D),
-                  foregroundColor: const Color(0xFF0A0D11),
-                  minimumSize: const Size.fromHeight(56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+
+              // ── Mode list ───────────────────────────────────────────────
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  itemCount: _categories.length,
+                  itemBuilder: (context, catIdx) {
+                    final cat = _categories[catIdx];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (catIdx > 0) const SizedBox(height: 20),
+
+                        // Category header
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 3, height: 12,
+                                decoration: BoxDecoration(
+                                  color: cat.accent,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(cat.title,
+                                  style: TextStyle(
+                                      color: cat.accent.withValues(alpha: 0.70),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 2.0)),
+                              const Spacer(),
+                              Text('${cat.modes.length}',
+                                  style: TextStyle(
+                                      color: cat.accent.withValues(alpha: 0.25),
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+
+                        // Mode tiles
+                        ...cat.modes.map((mode) => _ModeTile(
+                          mode: mode,
+                          onTap: () => _selectMode(mode),
+                        )),
+                      ],
+                    );
+                  },
                 ),
-                icon: const Icon(Icons.send_rounded),
-                label: const Text('Submit coaching request', style: TextStyle(fontWeight: FontWeight.w800)),
               ),
             ],
           ),
@@ -252,78 +222,131 @@ class _CoachingRequestScreenState extends State<CoachingRequestScreen> {
       ),
     );
   }
+}
 
-  Future<String?> _showPicker(BuildContext context, String title, List<String> options) async {
-    return showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: const Color(0xFF10161E),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 14),
-                ...options.map(
-                  (option) => ListTile(
-                    title: Text(option, style: const TextStyle(color: Colors.white)),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFFD7B56D)),
-                    onTap: () => Navigator.pop(context, option),
-                  ),
-                ),
-              ],
-            ),
+// ── Mode tile ─────────────────────────────────────────────────────────────────
+
+class _ModeTile extends StatelessWidget {
+  final _GameMode mode;
+  final VoidCallback onTap;
+
+  const _ModeTile({
+    required this.mode,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: _surf,
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
           ),
-        );
-      },
+        ),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 34, height: 34,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: mode.accent.withValues(alpha: 0.08),
+                border: Border.all(color: mode.accent.withValues(alpha: 0.22)),
+              ),
+              child: Icon(mode.icon,
+                  color: mode.accent.withValues(alpha: 0.70), size: 15),
+            ),
+            const SizedBox(width: 12),
+
+            // Label
+            Expanded(
+              child: Text(mode.label,
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.80),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4)),
+            ),
+
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: mode.accent.withValues(alpha: 0.25), size: 12),
+          ],
+        ),
+      ),
     );
   }
 }
 
-// ├── Shared widgets (also used by TipsFeedScreen and ProfileScreen) ─────────────────────────────────────────
+// ── Legacy shared cards (kept for profile screen compatibility) ───────────────
 
 class CoachingPreviewCard extends StatelessWidget {
   final String mode, weakness, goal, sessionLength, urgency, notes;
   final bool patchAware, includeLoadoutReview, includeVodReview;
+
   const CoachingPreviewCard({
     super.key,
-    required this.mode, required this.weakness, required this.goal,
-    required this.sessionLength, required this.urgency,
-    required this.patchAware, required this.includeLoadoutReview,
-    required this.includeVodReview, required this.notes,
+    required this.mode,
+    required this.weakness,
+    required this.goal,
+    required this.sessionLength,
+    required this.urgency,
+    required this.patchAware,
+    required this.includeLoadoutReview,
+    required this.includeVodReview,
+    required this.notes,
   });
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity, padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F141B), borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0x14FFFFFF)),
+        color: const Color(0xFF111111),
+        borderRadius: const BorderRadius.all(Radius.circular(3)),
+        border: Border.all(color: const Color(0xFF252525)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Preview', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          RequestLine(label: 'Mode', value: mode),
-          RequestLine(label: 'Weakness', value: weakness),
-          RequestLine(label: 'Goal', value: goal),
-          RequestLine(label: 'Session', value: sessionLength),
-          RequestLine(label: 'Urgency', value: urgency),
-          RequestLine(label: 'Patch-aware', value: patchAware ? 'Yes' : 'No'),
-          RequestLine(label: 'Loadout review', value: includeLoadoutReview ? 'Yes' : 'No'),
-          RequestLine(label: 'VOD review', value: includeVodReview ? 'Yes' : 'No'),
-          if (notes.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            const Text('Notes', style: TextStyle(color: Color(0xFFD7B56D), fontSize: 12, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(notes.trim(), style: const TextStyle(color: Color(0xFF93A0AF), fontSize: 13, height: 1.5)),
-          ],
-        ],
-      ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Preview',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5)),
+            const SizedBox(height: 12),
+            RequestLine(label: 'Mode', value: mode),
+            if (weakness.isNotEmpty)
+              RequestLine(label: 'Weakness', value: weakness),
+            if (goal.isNotEmpty)
+              RequestLine(label: 'Goal', value: goal),
+            if (sessionLength.isNotEmpty)
+              RequestLine(label: 'Session', value: sessionLength),
+            if (urgency.isNotEmpty)
+              RequestLine(label: 'Urgency', value: urgency),
+            if (patchAware)
+              RequestLine(label: 'Patch-aware', value: 'Yes'),
+            if (notes.trim().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Text('Notes',
+                  style: TextStyle(
+                      color: Color(0xFFA6FF2E),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2)),
+              const SizedBox(height: 6),
+              Text(notes.trim(),
+                  style: const TextStyle(
+                      color: Color(0xFFAAAAAA), fontSize: 13, height: 1.5)),
+            ],
+          ]),
     );
   }
 }
@@ -331,54 +354,37 @@ class CoachingPreviewCard extends StatelessWidget {
 class CoachingSummaryCard extends StatelessWidget {
   final CoachingRequest request;
   const CoachingSummaryCard({super.key, required this.request});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity, padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F141B), borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0x14FFFFFF)),
+        color: const Color(0xFF0C130C),
+        borderRadius: const BorderRadius.all(Radius.circular(3)),
+        border: Border.all(color: _lime.withValues(alpha: 0.18)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.verified_rounded, color: Color(0xFFD7B56D), size: 18),
-              SizedBox(width: 8),
-              Text('Saved request', style: TextStyle(color: Color(0xFFD7B56D), fontSize: 13, fontWeight: FontWeight.w800)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          RequestLine(label: 'Mode', value: request.mode),
-          RequestLine(label: 'Weakness', value: request.weakness),
-          RequestLine(label: 'Goal', value: request.goal),
-          RequestLine(label: 'Session', value: request.sessionLength),
-          RequestLine(label: 'Urgency', value: request.urgency),
-          RequestLine(label: 'Patch-aware', value: request.patchAware ? 'Enabled' : 'Disabled'),
-          RequestLine(label: 'Loadout review', value: request.includeLoadoutReview ? 'Included' : 'Off'),
-          RequestLine(label: 'VOD review', value: request.includeVodReview ? 'Included' : 'Off'),
-          if (request.notes.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            const Text('Member notes', style: TextStyle(color: Color(0xFFD7B56D), fontSize: 12, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(request.notes.trim(), style: const TextStyle(color: Color(0xFF93A0AF), fontSize: 13, height: 1.5)),
-          ],
-        ],
-      ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.verified_rounded, color: _lime, size: 14),
+              const SizedBox(width: 8),
+              const Text('Active Request',
+                  style: TextStyle(
+                      color: _lime,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2)),
+            ]),
+            const SizedBox(height: 12),
+            RequestLine(label: 'Mode', value: request.mode),
+            if (request.sessionLength.isNotEmpty)
+              RequestLine(label: 'Session', value: request.sessionLength),
+            if (request.urgency.isNotEmpty)
+              RequestLine(label: 'Urgency', value: request.urgency),
+          ]),
     );
   }
 }
-                    Text('Turn live intel into a real coaching request.',
-                      style: TextStyle(color: Colors.white, fontSize: 24,
-                        fontWeight: FontWeight.w800, height: 1.2)),
-                    SizedBox(height: 10),
-                    Text(
-                      'Warzone Intel is already tracking recurring patch notes, summaries, and weapon changes, so this form helps the player ask for coaching that matches the live meta.',
-                      style: TextStyle(color: Color(0xFF93A0AF), fontSize: 13, height: 1.55),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (latestRequest != null) ...[

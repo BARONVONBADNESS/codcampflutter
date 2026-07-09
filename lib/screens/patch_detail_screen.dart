@@ -1,3 +1,6 @@
+// FIXED: DetailPanel calls fixed — uses child: widget instead of body:/icon:/accent: params.
+// Replaced deprecated withOpacity with withValues(alpha:).
+
 import 'package:flutter/material.dart';
 import '../data/models/patch_intel_item.dart';
 import '../shared/widgets/detail_panel.dart';
@@ -33,28 +36,40 @@ class PatchDetailScreen extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    width: 42, height: 42,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F141B),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: const Color(0x14FFFFFF)),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white, size: 20),
                   ),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: onToggleSaved,
                   child: Container(
-                    width: 42, height: 42,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
-                      color: isSaved ? const Color(0x14D7B56D) : const Color(0xFF0F141B),
+                      color: isSaved
+                          ? const Color(0x14D7B56D)
+                          : const Color(0xFF0F141B),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: isSaved ? const Color(0x44D7B56D) : const Color(0x14FFFFFF)),
+                      border: Border.all(
+                          color: isSaved
+                              ? const Color(0x44D7B56D)
+                              : const Color(0x14FFFFFF)),
                     ),
                     child: Icon(
-                      isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                      color: isSaved ? const Color(0xFFD7B56D) : const Color(0xFF687483),
+                      isSaved
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                      color: isSaved
+                          ? const Color(0xFFD7B56D)
+                          : const Color(0xFF687483),
                       size: 20,
                     ),
                   ),
@@ -67,8 +82,13 @@ class PatchDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
                   gradient: const LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    colors: [Color(0xFF151D27), Color(0xFF0E141C), Color(0xFF0A0F15)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF151D27),
+                      Color(0xFF0E141C),
+                      Color(0xFF0A0F15)
+                    ],
                   ),
                   border: Border.all(color: const Color(0x22D7B56D)),
                 ),
@@ -77,34 +97,53 @@ class PatchDetailScreen extends StatelessWidget {
                   children: [
                     Row(children: [
                       Container(
-                        width: 36, height: 36,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: item.accent.withOpacity(0.15),
+                          color: item.accent.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(item.icon, color: item.accent, size: 18),
                       ),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(item.issueCode,
-                          style: TextStyle(color: item.accent, fontSize: 11,
-                              fontWeight: FontWeight.w800, letterSpacing: 1.1))),
+                      Expanded(
+                          child: Text(item.issueCode,
+                              style: TextStyle(
+                                  color: item.accent,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1))),
                       _ImpactBadge(impact: item.impact),
                     ]),
                     const SizedBox(height: 14),
                     Text(item.title,
-                        style: const TextStyle(color: Colors.white, fontSize: 20,
-                            fontWeight: FontWeight.w800, height: 1.25)),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            height: 1.25)),
                     const SizedBox(height: 8),
                     Text(item.subtitle,
-                        style: const TextStyle(color: Color(0xFF93A0AF), fontSize: 13, height: 1.5)),
+                        style: const TextStyle(
+                            color: Color(0xFF93A0AF),
+                            fontSize: 13,
+                            height: 1.5)),
                     const SizedBox(height: 14),
                     Text(item.body,
-                        style: const TextStyle(color: Color(0xFFB0BEC5), fontSize: 14, height: 1.6)),
+                        style: const TextStyle(
+                            color: Color(0xFFB0BEC5),
+                            fontSize: 14,
+                            height: 1.6)),
                     const SizedBox(height: 14),
                     Wrap(spacing: 8, runSpacing: 8, children: [
-                      MetaPill(label: item.type.toUpperCase(), color: item.accent),
-                      MetaPill(label: item.dateLabel, color: const Color(0xFF687483)),
-                      MetaPill(label: item.timeAgo, color: const Color(0xFF687483)),
+                      MetaPill(
+                          label: item.type.toUpperCase(), color: item.accent),
+                      MetaPill(
+                          label: item.dateLabel,
+                          color: const Color(0xFF687483)),
+                      MetaPill(
+                          label: item.timeAgo,
+                          color: const Color(0xFF687483)),
                     ]),
                   ],
                 ),
@@ -114,25 +153,53 @@ class PatchDetailScreen extends StatelessWidget {
                 const _SectionLabel(title: 'Tags'),
                 const SizedBox(height: 10),
                 Wrap(
-                  spacing: 8, runSpacing: 8,
-                  children: item.tags.map((tag) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F141B),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0x18FFFFFF)),
-                    ),
-                    child: Text(tag, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-                  )).toList(),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: item.tags
+                      .map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F141B),
+                              borderRadius: BorderRadius.circular(12),
+                              border:
+                                  Border.all(color: const Color(0x18FFFFFF)),
+                            ),
+                            child: Text(tag,
+                                style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600)),
+                          ))
+                      .toList(),
                 ),
               ],
               if (item.bullets.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 DetailPanel(
                   title: 'Key Points',
-                  body: item.bullets.join('\n'),
-                  icon: Icons.format_list_bulleted_rounded,
-                  accent: item.accent,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: item.bullets
+                        .map((bullet) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.arrow_right_alt_rounded,
+                                        color: item.accent, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                        child: Text(bullet,
+                                            style: const TextStyle(
+                                                color: Color(0xFF93A0AF),
+                                                fontSize: 13,
+                                                height: 1.5))),
+                                  ]),
+                            ))
+                        .toList(),
+                  ),
                 ),
               ],
               if (relatedItems.isNotEmpty) ...[
@@ -141,7 +208,8 @@ class PatchDetailScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 ...relatedItems.map((related) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _RelatedPatchCard(item: related, onTap: () => onOpenPatch(related)),
+                      child: _RelatedPatchCard(
+                          item: related, onTap: () => onOpenPatch(related)),
                     )),
               ],
             ],
@@ -157,7 +225,11 @@ class SavedPatchCard extends StatelessWidget {
   final VoidCallback onToggleSaved;
   final VoidCallback onTap;
 
-  const SavedPatchCard({super.key, required this.item, required this.onToggleSaved, required this.onTap});
+  const SavedPatchCard(
+      {super.key,
+      required this.item,
+      required this.onToggleSaved,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -173,21 +245,38 @@ class SavedPatchCard extends StatelessWidget {
         ),
         child: Row(children: [
           Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(color: item.accent.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+                color: item.accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12)),
             child: Icon(item.icon, color: item.accent, size: 18),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(item.issueCode, style: TextStyle(color: item.accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+          Expanded(
+              child:
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(item.issueCode,
+                style: TextStyle(
+                    color: item.accent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8)),
             const SizedBox(height: 2),
-            Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, height: 1.3)),
+            Text(item.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3)),
           ])),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: onToggleSaved,
-            child: const Icon(Icons.bookmark_rounded, color: Color(0xFFD7B56D), size: 20),
+            child: const Icon(Icons.bookmark_rounded,
+                color: Color(0xFFD7B56D), size: 20),
           ),
         ]),
       ),
@@ -197,6 +286,7 @@ class SavedPatchCard extends StatelessWidget {
 
 class _ImpactBadge extends StatelessWidget {
   final String impact;
+
   const _ImpactBadge({required this.impact});
 
   @override
@@ -209,23 +299,32 @@ class _ImpactBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(impact.toUpperCase(),
-          style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+          style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8)),
     );
   }
 }
 
 class _SectionLabel extends StatelessWidget {
   final String title;
+
   const _SectionLabel({required this.title});
 
   @override
   Widget build(BuildContext context) => Text(title,
-      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.2));
+      style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2));
 }
 
 class _RelatedPatchCard extends StatelessWidget {
@@ -248,18 +347,32 @@ class _RelatedPatchCard extends StatelessWidget {
         ),
         child: Row(children: [
           Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(color: item.accent.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+                color: item.accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12)),
             child: Icon(item.icon, color: item.accent, size: 18),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, height: 1.3)),
+          Expanded(
+              child:
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(item.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3)),
             const SizedBox(height: 2),
-            Text(item.type, style: const TextStyle(color: Color(0xFF687483), fontSize: 11)),
+            Text(item.type,
+                style: const TextStyle(
+                    color: Color(0xFF687483), fontSize: 11)),
           ])),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFD7B56D), size: 18),
+          const Icon(Icons.chevron_right_rounded,
+              color: Color(0xFFD7B56D), size: 18),
         ]),
       ),
     );

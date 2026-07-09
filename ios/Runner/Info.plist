@@ -47,6 +47,20 @@
 			</array>
 		</dict>
 	</dict>
+	<!-- Discord OAuth deep link: codcamp://auth -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.codcamp.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>codcamp</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
