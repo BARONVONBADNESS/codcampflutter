@@ -9,19 +9,39 @@ class CoachingRequest {
   final bool patchAware;
   final bool includeLoadoutReview;
   final bool includeVodReview;
+  final int messageCount; // how many messages in the thread
 
   const CoachingRequest({
     this.requestId,
     required this.mode,
-    required this.weakness,
-    required this.goal,
-    required this.sessionLength,
-    required this.urgency,
-    required this.notes,
-    required this.patchAware,
-    required this.includeLoadoutReview,
-    required this.includeVodReview,
+    this.weakness = '',
+    this.goal = '',
+    this.sessionLength = '',
+    this.urgency = '',
+    this.notes = '',
+    this.patchAware = true,
+    this.includeLoadoutReview = false,
+    this.includeVodReview = false,
+    this.messageCount = 0,
   });
+
+  /// Parse a coaching request from the server JSON (GET /api/requests).
+  factory CoachingRequest.fromJson(Map<String, dynamic> json) {
+    final messages = json['messages'] as List<dynamic>?;
+    return CoachingRequest(
+      requestId:            json['requestId'] as String?,
+      mode:                 (json['mode'] as String?) ?? '',
+      weakness:             (json['weakness'] as String?) ?? '',
+      goal:                 (json['goal'] as String?) ?? '',
+      sessionLength:        (json['sessionLength'] as String?) ?? '',
+      urgency:              (json['urgency'] as String?) ?? '',
+      notes:                (json['notes'] as String?) ?? '',
+      patchAware:           json['patchAware'] == true,
+      includeLoadoutReview: json['includeLoadoutReview'] == true,
+      includeVodReview:     json['includeVodReview'] == true,
+      messageCount:         messages?.length ?? 0,
+    );
+  }
 
   CoachingRequest copyWithRequestId(String id) => CoachingRequest(
     requestId:            id,
@@ -34,5 +54,6 @@ class CoachingRequest {
     patchAware:           patchAware,
     includeLoadoutReview: includeLoadoutReview,
     includeVodReview:     includeVodReview,
+    messageCount:         messageCount,
   );
 }

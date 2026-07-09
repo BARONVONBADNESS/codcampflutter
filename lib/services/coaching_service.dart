@@ -73,6 +73,41 @@ class CoachingService {
     }
   }
 
+  /// GET /api/requests?userId=X — fetch the user's coaching request history.
+  static Future<List<CoachingRequest>> fetchHistory(String userId) async {
+    try {
+      final response = await http
+          .get(Uri.parse('$kTipsBaseUrl/api/requests?userId=$userId'))
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final reqs = data['requests'] as List<dynamic>;
+        return reqs
+            .map((r) => CoachingRequest.fromJson(r as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('[CoachingService] fetchHistory failed: $e');
+    }
+    return [];
+  }
+
+  /// DELETE /api/requests/:requestId — remove a coaching request from the server.
+  static Future<bool> deleteRequest(String requestId) async {
+    try {
+      final response = await http
+          .delete(Uri.parse('$kTipsBaseUrl/api/requests/$requestId'))
+          .timeout(const Duration(seconds: 6));
+      return response.statusCode == 200;
+    } catch (e) {
+      // ignore: avoid_print
+      print('[CoachingService] deleteRequest failed: $e');
+      return false;
+    }
+  }
+
   /// GET /api/messages/:requestId — fetch the thread for a coaching request.
   static Future<List<ChatMessage>> getMessages(String requestId) async {
     try {

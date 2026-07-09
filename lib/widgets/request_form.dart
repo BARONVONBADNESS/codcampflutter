@@ -2,7 +2,7 @@
 // Modular request creation form extracted from CoachingRequestScreen
 
 import 'package:flutter/material.dart';
-import '../models/coaching_request_model.dart';
+import '../data/models/coaching_request_model.dart';
 import 'request_option.dart';
 import 'patch_aware_tip.dart';
 import 'member_notes_section.dart';

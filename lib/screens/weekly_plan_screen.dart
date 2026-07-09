@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import '../data/models/weekly_plan.dart';
+import '../services/weekly_plan_service.dart';
 
 const _lime  = Color(0xFFA6FF2E);
 const _amber = Color(0xFFD7A430);
@@ -226,8 +228,62 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   static const _days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   int _selectedDay = 2; // WED default (matches mockup)
 
+  WeeklyPlan? _plan; // null until loaded / on failure → use built-in defaults
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlan();
+  }
+
+  Future<void> _loadPlan() async {
+    final plan = await WeeklyPlanService.fetchPlan();
+    if (!mounted) return;
+    setState(() {
+      _plan = plan;
+      _loading = false;
+    });
+  }
+
+  // Map a backend PlanSessionTag to the screen's private _SessionTag.
+  _SessionTag _mapTag(PlanSessionTag t) {
+    switch (t) {
+      case PlanSessionTag.ab:
+        return _SessionTag.ab;
+      case PlanSessionTag.solo:
+        return _SessionTag.solo;
+      case PlanSessionTag.live:
+        return _SessionTag.live;
+    }
+  }
+
+  // Sessions to render for the selected day: live plan if available, else defaults.
+  List<_Session> _sessionsForSelectedDay() {
+    final plan = _plan;
+    if (plan == null) return _defaultSessions;
+    final live = plan.sessionsFor(_days[_selectedDay]);
+    if (live.isEmpty) return const [];
+    return live
+        .map((s) => _Session(
+              title: s.title,
+              time: s.time,
+              icon: planIconFor(s.iconKey),
+              tag: _mapTag(s.tag),
+            ))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sessions = _sessionsForSelectedDay();
+    final progress = _plan?.progress;
+    final progressFraction = progress?.fraction ?? 0.68;
+    final progressPercent =
+        progress?.percent ?? 68;
+    final progressLabel = progress != null
+        ? '${progress.completed} / ${progress.total} SESSIONS COMPLETED'
+        : '17 / 25 SESSIONS COMPLETED';
     return Scaffold(
       backgroundColor: _bg,
       body: SafeArea(
@@ -276,8 +332,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 2.0)),
                         const Spacer(),
-                        const Text('68%',
-                            style: TextStyle(
+                        Text('$progressPercent%',
+                            style: const TextStyle(
                                 color: _lime,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w900)),
@@ -285,15 +341,15 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                       const SizedBox(height: 6),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(1),
-                        child: const LinearProgressIndicator(
-                          value: 0.68,
+                        child: LinearProgressIndicator(
+                          value: progressFraction,
                           minHeight: 4,
-                          backgroundColor: Color(0xFF151F15),
-                          valueColor: AlwaysStoppedAnimation(_lime),
+                          backgroundColor: const Color(0xFF151F15),
+                          valueColor: const AlwaysStoppedAnimation(_lime),
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text('17 / 25 SESSIONS COMPLETED',
+                      Text(progressLabel,
                           style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.25),
                               fontSize: 9)),
@@ -326,7 +382,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                         fontWeight: FontWeight.w900,
                         letterSpacing: 3.0)),
                 const SizedBox(width: 10),
-                Text('— ${_defaultSessions.length} SESSIONS SCHEDULED',
+                Text('— ${sessions.length} SESSIONS SCHEDULED',
                     style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.25),
                         fontSize: 10)),
@@ -335,8 +391,31 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               const SizedBox(height: 12),
 
               // ── Session list ────────────────────────────────────────────
-              ..._defaultSessions.asMap().entries.map((e) =>
-                  _SessionRow(index: e.key + 1, session: e.value)),
+              if (_loading && _plan == null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(
+                              _lime.withValues(alpha: 0.6))),
+                    ),
+                  ),
+                )
+              else if (sessions.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text('NO SESSIONS SCHEDULED — REST DAY.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          fontSize: 10,
+                          letterSpacing: 2.0)),
+                )
+              else
+                ...sessions.asMap().entries.map((e) =>
+                    _SessionRow(index: e.key + 1, session: e.value)),
 
               const SizedBox(height: 18),
 

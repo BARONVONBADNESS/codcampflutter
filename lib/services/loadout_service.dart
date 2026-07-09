@@ -6,35 +6,49 @@ const String kLoadoutLanUrl = 'http://192.168.1.173:18790';
 final String kLoadoutBaseUrl = kIsWeb ? 'http://localhost:18790' : kLoadoutLanUrl;
 
 class LoadoutAttachments {
-  final String muzzle;
-  final String barrel;
-  final String underbarrel;
-  final String magazine;
-  final String rearGrip;
+  /// All attachment slots, keyed by display label (e.g. "Muzzle", "Rear Grip").
+  /// Only slots that have a real attachment are included — no "—" fillers.
+  final Map<String, String> _slots;
 
-  const LoadoutAttachments({
-    required this.muzzle,
-    required this.barrel,
-    required this.underbarrel,
-    required this.magazine,
-    required this.rearGrip,
-  });
+  const LoadoutAttachments._(this._slots);
 
-  factory LoadoutAttachments.fromJson(Map<String, dynamic> j) => LoadoutAttachments(
-        muzzle:      j['muzzle']      ?? '—',
-        barrel:      j['barrel']      ?? '—',
-        underbarrel: j['underbarrel'] ?? '—',
-        magazine:    j['magazine']    ?? '—',
-        rearGrip:    j['rear_grip']   ?? '—',
-      );
+  /// Canonical slot order for display. Slots not in this list appear at the end.
+  static const _slotOrder = [
+    'muzzle', 'barrel', 'underbarrel', 'stock',
+    'magazine', 'rear_grip', 'optic', 'laser',
+  ];
 
-  List<MapEntry<String, String>> get entries => [
-        MapEntry('Muzzle',      muzzle),
-        MapEntry('Barrel',      barrel),
-        MapEntry('Underbarrel', underbarrel),
-        MapEntry('Magazine',    magazine),
-        MapEntry('Rear Grip',   rearGrip),
-      ];
+  static const _slotLabels = {
+    'muzzle':      'Muzzle',
+    'barrel':      'Barrel',
+    'underbarrel': 'Underbarrel',
+    'stock':       'Stock',
+    'magazine':    'Magazine',
+    'rear_grip':   'Rear Grip',
+    'optic':       'Optic',
+    'laser':       'Laser',
+  };
+
+  factory LoadoutAttachments.fromJson(Map<String, dynamic> j) {
+    final slots = <String, String>{};
+    for (final key in _slotOrder) {
+      final val = j[key] as String?;
+      if (val != null && val.isNotEmpty && val != '—') {
+        slots[_slotLabels[key] ?? key] = val;
+      }
+    }
+    // Pick up any extra keys not in the canonical list
+    for (final entry in j.entries) {
+      final label = _slotLabels[entry.key] ?? entry.key;
+      if (!slots.containsKey(label) && entry.value is String) {
+        final v = entry.value as String;
+        if (v.isNotEmpty && v != '—') slots[label] = v;
+      }
+    }
+    return LoadoutAttachments._(slots);
+  }
+
+  List<MapEntry<String, String>> get entries => _slots.entries.toList();
 }
 
 class Loadout {

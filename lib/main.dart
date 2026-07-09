@@ -18,6 +18,8 @@ import 'screens/profile_screen.dart';
 import 'screens/loadout_screen.dart';
 import 'services/tips_service.dart';
 import 'services/patch_service.dart';
+import 'services/coaching_service.dart';
+import 'services/loadout_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,13 +59,14 @@ class _MainShellState extends State<MainShell> {
   final Set<String> _savedTipIds = {};
   final Map<String, String?> _selectedReactions = {};
   final Set<String> _savedPatchIds = {};
+  final Set<String> _savedLoadoutIds = {};
   final Set<String> _completedPlanTaskIds = {};
   final List<CoachingRequest> _coachingHistory = [];
-  bool _hideDuplicates = false;
 
   // Live data — null = server unreachable, uses static fallback.
   List<IntelItem>? _liveTips;
   List<PatchIntelItem>? _livePatches;
+  List<Loadout> _loadouts = [];
 
   @override
   void initState() {
@@ -72,16 +75,36 @@ class _MainShellState extends State<MainShell> {
   }
 
   Future<void> _loadLiveData() async {
+    final userId = AuthService.userId ?? '';
+
     final results = await Future.wait([
       TipsService.fetchLiveTips(),
       PatchService.fetchLivePatches(),
+      LoadoutService.fetchLoadouts(),
+      if (userId.isNotEmpty) CoachingService.fetchHistory(userId),
     ]);
     if (!mounted) return;
     setState(() {
       final tips    = results[0] as List<IntelItem>;
       final patches = results[1] as List<PatchIntelItem>;
+      final loadouts = results[2] as List<Loadout>;
       _liveTips    = tips.isNotEmpty    ? tips    : null;
       _livePatches = patches.isNotEmpty ? patches : null;
+      _loadouts    = loadouts;
+
+      // Restore coaching history from server — merge with any already in memory.
+      if (results.length > 3) {
+        final serverHistory = results[3] as List<CoachingRequest>;
+        final existingIds = _coachingHistory
+            .where((r) => r.requestId != null)
+            .map((r) => r.requestId)
+            .toSet();
+        for (final req in serverHistory) {
+          if (req.requestId != null && !existingIds.contains(req.requestId)) {
+            _coachingHistory.add(req);
+          }
+        }
+      }
     });
   }
 
@@ -115,6 +138,16 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
+  void _toggleSavedLoadout(String id) {
+    setState(() {
+      if (_savedLoadoutIds.contains(id)) {
+        _savedLoadoutIds.remove(id);
+      } else {
+        _savedLoadoutIds.add(id);
+      }
+    });
+  }
+
   void _togglePlanTask(String id) {
     setState(() {
       if (_completedPlanTaskIds.contains(id)) {
@@ -128,14 +161,21 @@ class _MainShellState extends State<MainShell> {
   void _saveCoachingRequest(CoachingRequest request) {
     setState(() {
       _coachingHistory.add(request);
-      _currentIndex = 0;
+    });
+  }
+
+  void _deleteCoachingRequest(String requestId) {
+    CoachingService.deleteRequest(requestId).then((ok) {
+      if (ok && mounted) {
+        setState(() {
+          _coachingHistory.removeWhere((r) => r.requestId == requestId);
+        });
+      }
     });
   }
 
   void _openTipDetail(BuildContext context, IntelItem item) {
-    final visibleItems = _hideDuplicates
-        ? AppData.intelItems.where((e) => !e.isDuplicate).toList()
-        : AppData.intelItems.toList();
+    final visibleItems = AppData.intelItems.toList();
 
     Navigator.push(
       context,
@@ -174,10 +214,7 @@ class _MainShellState extends State<MainShell> {
 
   /// Returns live Discord tips if the server is reachable, otherwise static fallback.
   List<IntelItem> get _visibleTips {
-    final source = _liveTips ?? AppData.intelItems.toList();
-    return _hideDuplicates
-        ? source.where((e) => !e.isDuplicate).toList()
-        : source;
+    return _liveTips ?? AppData.intelItems.toList();
   }
 
 
@@ -188,9 +225,8 @@ class _MainShellState extends State<MainShell> {
 
     final pages = [
       HomeScreen(
-        hideDuplicates: _hideDuplicates,
         savedTipCount: _savedTipIds.length,
-        savedPatchCount: _savedPatchIds.length,
+        savedLoadoutCount: _savedLoadoutIds.length,
         completedTaskCount: _completedPlanTaskIds.length,
         hasRequest: _coachingHistory.isNotEmpty,
       ),
@@ -219,16 +255,19 @@ class _MainShellState extends State<MainShell> {
       ),
       ProfileScreen(
         savedTipIds: _savedTipIds,
-        savedPatchIds: _savedPatchIds,
+        savedLoadoutIds: _savedLoadoutIds,
         allTips: AppData.intelItems.toList(),
-        allPatches: _livePatches ?? AppData.patchItems.toList(),
+        allLoadouts: _loadouts,
         coachingHistory: _coachingHistory,
         onToggleSavedTip: _toggleSaved,
-        onToggleSavedPatch: _toggleSavedPatch,
+        onToggleSavedLoadout: _toggleSavedLoadout,
         onOpenTip: (item) => _openTipDetail(context, item),
-        onOpenPatch: (item) => _openPatchDetail(context, item),
+        onDeleteCoachingRequest: _deleteCoachingRequest,
       ),
-      const LoadoutScreen(),
+      LoadoutScreen(
+        savedLoadoutIds: _savedLoadoutIds,
+        onToggleSaved: _toggleSavedLoadout,
+      ),
     ];
 
     return Scaffold(

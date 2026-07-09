@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../shared/widgets/radar_background.dart';
+import '../services/stats_service.dart';
 import 'home_screen.dart'; // for AppTopBar
 
 // ── Mode definitions (mirrors Discord bot) ────────────────────────────────────
@@ -77,6 +78,7 @@ class _MyStatsScreenState extends State<MyStatsScreen> {
   int _selectedMode = 0;
   Map<String, Map<String, double>> _stats = {};
   bool _editing = false;
+  bool _synced = false;
   final Map<String, TextEditingController> _controllers = {};
 
   @override
@@ -92,18 +94,41 @@ class _MyStatsScreenState extends State<MyStatsScreen> {
   }
 
   Future<void> _loadStats() async {
+    // 1. Load local immediately (fast)
     final prefs = await SharedPreferences.getInstance();
     final raw   = prefs.getString('my_stats') ?? '{}';
-    setState(() {
-      _stats = (jsonDecode(raw) as Map<String, dynamic>).map((k, v) =>
-        MapEntry(k, Map<String, double>.from(
-          (v as Map).map((fk, fv) => MapEntry(fk as String, (fv as num).toDouble())))));
-    });
+    final local = (jsonDecode(raw) as Map<String, dynamic>).map((k, v) =>
+      MapEntry(k, Map<String, double>.from(
+        (v as Map).map((fk, fv) => MapEntry(fk as String, (fv as num).toDouble())))));
+    setState(() => _stats = local);
+
+    // 2. Try server (may have newer data from another device)
+    final remote = await StatsService.fetchStats();
+    if (remote != null && remote.isNotEmpty) {
+      // Merge: server wins for modes it has, local fills gaps
+      final merged = Map<String, Map<String, double>>.from(local);
+      for (final entry in remote.entries) {
+        merged[entry.key] = entry.value;
+      }
+      setState(() { _stats = merged; _synced = true; });
+      await prefs.setString('my_stats', jsonEncode(merged));
+    } else if (remote != null) {
+      // Server returned empty — push local stats up if we have any
+      if (local.isNotEmpty) {
+        StatsService.saveStats(local);
+      }
+      setState(() => _synced = true);
+    }
   }
 
   Future<void> _saveStats() async {
+    // Save locally first (always works)
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('my_stats', jsonEncode(_stats));
+    // Then sync to server (fire-and-forget)
+    StatsService.saveStats(_stats).then((ok) {
+      if (mounted) setState(() => _synced = ok);
+    });
   }
 
   void _startEditing() {
@@ -304,10 +329,17 @@ class _MyStatsScreenState extends State<MyStatsScreen> {
               ),
 
               const SizedBox(height: 16),
-              const Text(
-                '💡  Stats are stored on this device. Update them after each session so your coach always has a fresh picture.',
-                style: TextStyle(color: Color(0xFF444444), fontSize: 11, height: 1.5),
-              ),
+              Row(children: [
+                Icon(_synced ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
+                  color: _synced ? const Color(0xFF4ade80) : const Color(0xFF444444), size: 14),
+                const SizedBox(width: 6),
+                Expanded(child: Text(
+                  _synced
+                    ? 'Stats synced to server. Your coach always has a fresh picture.'
+                    : 'Stats saved locally. Sign in to sync across devices.',
+                  style: const TextStyle(color: Color(0xFF444444), fontSize: 11, height: 1.5),
+                )),
+              ]),
             ]),
           ),
         ),

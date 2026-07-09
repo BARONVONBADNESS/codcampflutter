@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../data/models/intel_item.dart';
-import '../data/models/patch_intel_item.dart';
 import '../data/models/coaching_request.dart';
 import '../shared/widgets/empty_state_card.dart';
 import '../services/auth_service.dart';
+import '../services/loadout_service.dart';
 import 'home_screen.dart';
-import 'login_screen.dart' show showDeliveryPreferenceSheet;
+import 'login_screen.dart' show LoginScreen, showDeliveryPreferenceSheet;
 import 'my_stats_screen.dart';
 import 'chat_screen.dart';
 
@@ -288,26 +288,26 @@ class _ActionButton extends StatelessWidget {
 
 class ProfileScreen extends StatefulWidget {
   final Set<String> savedTipIds;
-  final Set<String> savedPatchIds;
+  final Set<String> savedLoadoutIds;
   final List<IntelItem> allTips;
-  final List<PatchIntelItem> allPatches;
+  final List<Loadout> allLoadouts;
   final List<CoachingRequest> coachingHistory;
   final void Function(String id) onToggleSavedTip;
-  final void Function(String id) onToggleSavedPatch;
+  final void Function(String id) onToggleSavedLoadout;
   final void Function(IntelItem item) onOpenTip;
-  final void Function(PatchIntelItem item) onOpenPatch;
+  final void Function(String requestId) onDeleteCoachingRequest;
 
   const ProfileScreen({
     super.key,
     required this.savedTipIds,
-    required this.savedPatchIds,
+    required this.savedLoadoutIds,
     required this.allTips,
-    required this.allPatches,
+    required this.allLoadouts,
     required this.coachingHistory,
     required this.onToggleSavedTip,
-    required this.onToggleSavedPatch,
+    required this.onToggleSavedLoadout,
     required this.onOpenTip,
-    required this.onOpenPatch,
+    required this.onDeleteCoachingRequest,
   });
 
   @override
@@ -331,8 +331,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final savedTips = widget.allTips
         .where((t) => widget.savedTipIds.contains(t.id))
         .toList();
-    final savedPatches = widget.allPatches
-        .where((p) => widget.savedPatchIds.contains(p.id))
+    final savedLoadouts = widget.allLoadouts
+        .where((l) => widget.savedLoadoutIds.contains(l.id))
         .toList();
 
     final user = AuthService.currentUser;
@@ -506,7 +506,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // ── Tab content ─────────────────────────────────────────────
               if (_tab == 0) _buildOverview(context),
               if (_tab == 1) _buildSkills(savedTips),
-              if (_tab == 2) _buildLoadout(savedPatches),
+              if (_tab == 2) _buildLoadout(savedLoadouts),
 
             ],
           ),
@@ -730,6 +730,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ]),
+
+            const SizedBox(height: 16),
+            Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+            const SizedBox(height: 16),
+
+            // Sign out row
+            GestureDetector(
+              onTap: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF0C130C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      side: BorderSide(color: Colors.red.withValues(alpha: 0.30)),
+                    ),
+                    title: const Text('SIGN OUT',
+                        style: TextStyle(color: Colors.white, fontSize: 14,
+                            fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+                    content: const Text(
+                        'You\'ll need to log in again to access coaching and saved data.',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: Text('CANCEL',
+                            style: TextStyle(color: _lime.withValues(alpha: 0.70),
+                                fontSize: 11, fontWeight: FontWeight.w700,
+                                letterSpacing: 1.0)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('SIGN OUT',
+                            style: TextStyle(color: Colors.redAccent,
+                                fontSize: 11, fontWeight: FontWeight.w700,
+                                letterSpacing: 1.0)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true && mounted) {
+                  await AuthService.logout();
+                  if (mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  }
+                }
+              },
+              child: Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(Icons.logout_rounded,
+                      color: Colors.redAccent.withValues(alpha: 0.55), size: 14),
+                ),
+                const SizedBox(width: 12),
+                const Text('SIGN OUT',
+                    style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5)),
+                const Spacer(),
+                Icon(Icons.chevron_right_rounded,
+                    color: Colors.redAccent.withValues(alpha: 0.30), size: 16),
+              ]),
+            ),
           ],
         ),
       ),
@@ -780,37 +852,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 10),
         ...widget.coachingHistory.reversed.map((req) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _HistoryCard(request: req),
+              child: _HistoryCard(
+                request: req,
+                onDelete: req.requestId != null
+                    ? () => widget.onDeleteCoachingRequest(req.requestId!)
+                    : null,
+              ),
             )),
       ],
     ]);
   }
 
-  // ── LOADOUT tab (saved patches) ────────────────────────────────────────────
+  // ── LOADOUT tab (saved loadouts) ────────────────────────────────────────────
 
-  Widget _buildLoadout(List<PatchIntelItem> savedPatches) {
+  Widget _buildLoadout(List<Loadout> savedLoadouts) {
     return Column(children: [
       Row(children: [
-        Text('SAVED PATCH INTEL',
+        Text('SAVED LOADOUTS',
             style: TextStyle(color: _lime.withValues(alpha: 0.45),
                 fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
         const Spacer(),
-        Text('${savedPatches.length} ITEMS',
+        Text('${savedLoadouts.length} BUILDS',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.20),
                 fontSize: 9)),
       ]),
       const SizedBox(height: 10),
-      if (savedPatches.isEmpty)
+      if (savedLoadouts.isEmpty)
         const EmptyStateCard(
-            title: 'No saved patches',
-            subtitle: 'Bookmark patch intel to track important changes.')
+            title: 'No saved loadouts',
+            subtitle: 'Bookmark builds from the Loadouts tab to save them here.')
       else
-        ...savedPatches.map((patch) => Padding(
+        ...savedLoadouts.map((lo) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: SavedPatchCard(
-                item: patch,
-                onToggleSaved: () => widget.onToggleSavedPatch(patch.id),
-                onTap: () => widget.onOpenPatch(patch),
+              child: _SavedLoadoutCard(
+                loadout: lo,
+                onRemove: () => widget.onToggleSavedLoadout(lo.id),
               ),
             )),
     ]);
@@ -949,60 +1025,71 @@ class SavedTipCard extends StatelessWidget {
   }
 }
 
-// ── Saved patch card ──────────────────────────────────────────────────────────
+// ── Saved loadout card ───────────────────────────────────────────────────────
 
-class SavedPatchCard extends StatelessWidget {
-  final PatchIntelItem item;
-  final VoidCallback onToggleSaved;
-  final VoidCallback onTap;
+class _SavedLoadoutCard extends StatelessWidget {
+  final Loadout loadout;
+  final VoidCallback onRemove;
 
-  const SavedPatchCard(
-      {super.key,
-      required this.item,
-      required this.onToggleSaved,
-      required this.onTap});
+  const _SavedLoadoutCard({required this.loadout, required this.onRemove});
+
+  Color _tierColor(String tier) {
+    switch (tier) {
+      case 'S': return const Color(0xFFFFD700);
+      case 'A': return const Color(0xFFA6FF2E);
+      case 'B': return const Color(0xFF6E9BFF);
+      default:  return const Color(0xFF888888);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: _surf,
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-        ),
-        child: Row(children: [
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-                color: item.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(3)),
-            child: Icon(item.icon, color: item.accent, size: 17),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 13,
-                        fontWeight: FontWeight.w700, height: 1.3)),
-                const SizedBox(height: 2),
-                Text('${item.type}  ·  ${item.timeAgo}',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.30),
-                        fontSize: 11)),
-              ])),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onToggleSaved,
-            child: const Icon(Icons.bookmark_rounded, color: _amber, size: 20),
-          ),
-        ]),
+    final tierColor = _tierColor(loadout.tier);
+    final attPreview = loadout.attachments.entries
+        .take(3)
+        .map((e) => e.value)
+        .join(' · ');
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _surf,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
+      child: Row(children: [
+        // Tier badge
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: tierColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: tierColor.withValues(alpha: 0.4)),
+          ),
+          child: Center(
+            child: Text(loadout.tier,
+              style: TextStyle(color: tierColor, fontSize: 12, fontWeight: FontWeight.w900)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(loadout.weapon,
+              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text('${loadout.weaponClass}  ·  $attPreview',
+              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.30), fontSize: 11)),
+          ],
+        )),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: onRemove,
+          child: const Icon(Icons.bookmark_rounded, color: _amber, size: 20),
+        ),
+      ]),
     );
   }
 }
@@ -1011,7 +1098,8 @@ class SavedPatchCard extends StatelessWidget {
 
 class _HistoryCard extends StatelessWidget {
   final CoachingRequest request;
-  const _HistoryCard({required this.request});
+  final VoidCallback? onDelete;
+  const _HistoryCard({required this.request, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -1047,10 +1135,11 @@ class _HistoryCard extends StatelessWidget {
                 Text(request.mode,
                     style: const TextStyle(color: Colors.white, fontSize: 13,
                         fontWeight: FontWeight.w700)),
-                Text(request.goal,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.30),
-                        fontSize: 11)),
+                if (request.goal.isNotEmpty)
+                  Text(request.goal,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.30),
+                          fontSize: 11)),
               ])),
           if (hasThread)
             Container(
@@ -1069,9 +1158,37 @@ class _HistoryCard extends StatelessWidget {
               ]),
             )
           else
-            Text(request.urgency,
+            Text(request.urgency.isNotEmpty ? request.urgency : 'ACTIVE',
                 style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.25), fontSize: 11)),
+          if (onDelete != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF111111),
+                    title: const Text('Delete request?',
+                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                    content: const Text('This will permanently remove this coaching request and its chat history.',
+                        style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('CANCEL', style: TextStyle(color: Color(0xFF555555))),
+                      ),
+                      TextButton(
+                        onPressed: () { Navigator.pop(ctx); onDelete!(); },
+                        child: const Text('DELETE', style: TextStyle(color: Color(0xFFFF4444), fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Icon(Icons.delete_outline_rounded, color: Color(0xFF555555), size: 18),
+            ),
+          ],
         ]),
       ),
     );

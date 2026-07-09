@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'themes.dart';
-import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 
 class CodCampApp extends StatelessWidget {
   const CodCampApp({super.key});
@@ -13,9 +13,9 @@ class CodCampApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       theme: CodCampTheme.darkTheme,
       darkTheme: CodCampTheme.darkTheme,
-      // LoginScreen checks AuthService.isLoggedIn in initState and jumps
-      // straight to MainShell if already authenticated.
-      home: const LoginScreen(),
+      // SplashScreen plays the radar/skull animation, then routes to
+      // MainShell (if already authenticated) or LoginScreen.
+      home: const SplashScreen(),
     );
   }
 }

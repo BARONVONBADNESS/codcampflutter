@@ -4,7 +4,14 @@ import '../shared/widgets/radar_background.dart';
 import 'home_screen.dart'; // for AppTopBar
 
 class LoadoutScreen extends StatefulWidget {
-  const LoadoutScreen({super.key});
+  final Set<String> savedLoadoutIds;
+  final void Function(String id) onToggleSaved;
+
+  const LoadoutScreen({
+    super.key,
+    required this.savedLoadoutIds,
+    required this.onToggleSaved,
+  });
 
   @override
   State<LoadoutScreen> createState() => _LoadoutScreenState();
@@ -14,6 +21,7 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
   List<Loadout> _loadouts = [];
   bool _loading = true;
   String _filter = '';
+  String _sortBy = 'score'; // 'score', 'date', 'name'
 
   static const _green  = Color(0xFFA6FF2E);
   static const _dim    = Color(0xFF6E7F3E);
@@ -35,13 +43,27 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
   }
 
   List<Loadout> get _filtered {
-    if (_filter.isEmpty) return _loadouts;
-    final q = _filter.toLowerCase();
-    return _loadouts.where((l) =>
-      l.name.toLowerCase().contains(q) ||
-      l.weapon.toLowerCase().contains(q) ||
-      l.weaponClass.toLowerCase().contains(q)
-    ).toList();
+    var list = List<Loadout>.from(_loadouts);
+    if (_filter.isNotEmpty) {
+      final q = _filter.toLowerCase();
+      list = list.where((l) =>
+        l.name.toLowerCase().contains(q) ||
+        l.weapon.toLowerCase().contains(q) ||
+        l.weaponClass.toLowerCase().contains(q)
+      ).toList();
+    }
+    switch (_sortBy) {
+      case 'score':
+        list.sort((a, b) => b.metaScore.compareTo(a.metaScore));
+        break;
+      case 'date':
+        list.sort((a, b) => b.sharedAt.compareTo(a.sharedAt));
+        break;
+      case 'name':
+        list.sort((a, b) => a.weapon.toLowerCase().compareTo(b.weapon.toLowerCase()));
+        break;
+    }
+    return list;
   }
 
   @override
@@ -83,6 +105,44 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    // Sort chips
+                    Row(children: [
+                      const Text('SORT BY', style: TextStyle(color: Color(0xFF555555), fontSize: 9, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
+                      const SizedBox(width: 10),
+                      ...[
+                        ('score', 'SCORE', Icons.star_rounded),
+                        ('date',  'DATE',  Icons.schedule_rounded),
+                        ('name',  'A–Z',   Icons.sort_by_alpha_rounded),
+                      ].map((s) {
+                        final sel = _sortBy == s.$1;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _sortBy = s.$1),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: sel ? _dim.withValues(alpha: 0.2) : _surf,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(color: sel ? _dim : _border),
+                              ),
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(s.$3, size: 12, color: sel ? _green : _soft),
+                                const SizedBox(width: 5),
+                                Text(s.$2, style: TextStyle(
+                                  color: sel ? _green : _soft,
+                                  fontSize: 9,
+                                  fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
+                                  letterSpacing: 0.5,
+                                )),
+                              ]),
+                            ),
+                          ),
+                        );
+                      }),
+                    ]),
                     const SizedBox(height: 12),
                   ],
                 ),
@@ -98,10 +158,17 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
                             child: ListView.builder(
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
                               itemCount: _filtered.length,
-                              itemBuilder: (ctx, i) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _BuildCard(loadout: _filtered[i]),
-                              ),
+                              itemBuilder: (ctx, i) {
+                                final lo = _filtered[i];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _BuildCard(
+                                    loadout: lo,
+                                    isSaved: widget.savedLoadoutIds.contains(lo.id),
+                                    onToggleSaved: () => widget.onToggleSaved(lo.id),
+                                  ),
+                                );
+                              },
                             ),
                           ),
               ),
@@ -126,7 +193,9 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
 // ── Individual build card ─────────────────────────────────────────────────────
 class _BuildCard extends StatefulWidget {
   final Loadout loadout;
-  const _BuildCard({required this.loadout});
+  final bool isSaved;
+  final VoidCallback onToggleSaved;
+  const _BuildCard({required this.loadout, required this.isSaved, required this.onToggleSaved});
 
   @override
   State<_BuildCard> createState() => _BuildCardState();
@@ -229,6 +298,15 @@ class _BuildCardState extends State<_BuildCard> {
                 const Text('SCORE', style: TextStyle(color: Color(0xFF555555), fontSize: 8, letterSpacing: 1.2)),
               ]),
               const SizedBox(width: 8),
+              GestureDetector(
+                onTap: widget.onToggleSaved,
+                child: Icon(
+                  widget.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                  color: widget.isSaved ? const Color(0xFFD7B56D) : const Color(0xFF555555),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 6),
               Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                 color: const Color(0xFF555555), size: 18),
             ]),

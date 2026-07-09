@@ -129,17 +129,15 @@ class StatCard extends StatelessWidget {
 // ── HomeScreen ─────────────────────────────────────────────────────────────
 
 class HomeScreen extends StatelessWidget {
-  final bool hideDuplicates;
   final int savedTipCount;
-  final int savedPatchCount;
+  final int savedLoadoutCount;
   final int completedTaskCount;
   final bool hasRequest;
 
   const HomeScreen({
     super.key,
-    required this.hideDuplicates,
     required this.savedTipCount,
-    required this.savedPatchCount,
+    required this.savedLoadoutCount,
     required this.completedTaskCount,
     required this.hasRequest,
   });
@@ -148,8 +146,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final totalTips = AppData.intelItems.length;
-    final totalDuplicates =
-        AppData.intelItems.where((e) => e.isDuplicate).length;
     final totalPatchItems = AppData.patchItems.length;
 
     return Scaffold(
@@ -249,8 +245,8 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: StatCard(
-                      label: 'Saved Patch',
-                      value: '$savedPatchCount',
+                      label: 'Saved Builds',
+                      value: '$savedLoadoutCount',
                       icon: Icons.inventory_2_rounded,
                       color: theme.colorScheme.secondary,
                     ),
@@ -266,30 +262,6 @@ class HomeScreen extends StatelessWidget {
                       value: '$completedTaskCount',
                       icon: Icons.check_circle_outline_rounded,
                       color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: StatCard(
-                      label: 'De-dupe',
-                      value: hideDuplicates ? 'ON' : 'OFF',
-                      icon: Icons.tune_rounded,
-                      color: hideDuplicates
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.secondary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: StatCard(
-                      label: 'Duplicates',
-                      value: '$totalDuplicates',
-                      icon: Icons.copy_all_rounded,
-                      color: theme.colorScheme.secondary,
                     ),
                   ),
                   const SizedBox(width: 10),

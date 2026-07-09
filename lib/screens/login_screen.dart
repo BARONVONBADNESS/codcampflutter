@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import '../main.dart';
 import '../services/auth_service.dart';
 import '../services/discord_oauth.dart';
+import '../services/tips_service.dart'; // kTipsBaseUrl
+import 'signup_screen.dart';
 
 const _lime    = Color(0xFFA6FF2E);
 const _bg      = Color(0xFF050A05);
@@ -659,13 +663,51 @@ class _LoginScreenState extends State<LoginScreen>
     if (_engaged) return;
 
     final callsign = _callsignCtrl.text.trim();
+    final accessCode = _codeCtrl.text.trim();
+
     if (callsign.isEmpty) {
       setState(() => _errorMsg = 'Enter your callsign or email.');
+      return;
+    }
+    if (accessCode.isEmpty) {
+      setState(() => _errorMsg = 'Enter your access code.');
       return;
     }
 
     setState(() { _engaged = true; _errorMsg = null; });
     HapticFeedback.mediumImpact();
+
+    // Validate access code against the server
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$kTipsBaseUrl/api/auth/verify'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'callsign': callsign,
+              'accessCode': accessCode,
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
+
+      if (!mounted) return;
+
+      if (response.statusCode != 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          _engaged = false;
+          _errorMsg = body['error'] as String? ?? 'Invalid credentials.';
+        });
+        return;
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _engaged = false;
+        _errorMsg = 'Could not reach server. Is the engine running?';
+      });
+      return;
+    }
 
     await AuthService.loginWithApp(
       callsign: callsign,
@@ -965,13 +1007,31 @@ class _LoginScreenState extends State<LoginScreen>
 
                   const SizedBox(height: 34),
 
-                  // Footer
-                  Text('NEW RECRUIT? REQUEST INVITATION AT CODCAMP.COM',
+                  // Sign-up link
+                  GestureDetector(
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const SignUpScreen())),
+                    child: RichText(
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: _lime.withValues(alpha: 0.20),
-                          fontSize: 9,
-                          letterSpacing: 1.0)),
+                      text: TextSpan(
+                        style: TextStyle(
+                            color: _lime.withValues(alpha: 0.25),
+                            fontSize: 10,
+                            letterSpacing: 1.0),
+                        children: [
+                          const TextSpan(text: 'NEW RECRUIT?  '),
+                          TextSpan(
+                            text: 'ENLIST HERE',
+                            style: TextStyle(
+                                color: _lime.withValues(alpha: 0.55),
+                                fontWeight: FontWeight.w900,
+                                decoration: TextDecoration.underline,
+                                decorationColor: _lime.withValues(alpha: 0.30)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 16),
                 ],
