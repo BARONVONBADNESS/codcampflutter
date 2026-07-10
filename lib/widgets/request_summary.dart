@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import '../data/models/coaching_request_model.dart';
-import 'request_line.dart';
 import 'toggle_row.dart';
 
 /// Request summary card displayed in the preview panel
