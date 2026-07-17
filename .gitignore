@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ghost Protocol — debris from botched shell/pager commands (see CLAUDE.md)
+.dart';
+*.orig
+*.bak
+Environment)
+routine_*.json
