@@ -84,9 +84,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => destination,
+        pageBuilder: (_, _, _) => destination,
         transitionDuration: const Duration(milliseconds: 600),
-        transitionsBuilder: (_, animation, __, child) =>
+        transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
     );
@@ -140,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       'assets/images/app_logo.png',
                       width: 120,
                       height: 120,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
                     const SizedBox(height: 16),
                     if (_videoFailed)

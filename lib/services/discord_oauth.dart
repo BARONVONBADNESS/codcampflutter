@@ -54,7 +54,7 @@ class DiscordOAuthConfig {
       'redirect_uri':  redirectUri,
       'response_type': 'code',
       'scope':         scopes,
-      if (state != null) 'state': state,
+      'state': ?state,
     });
   }
 }

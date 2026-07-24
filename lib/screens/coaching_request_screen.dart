@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../data/models/coaching_request.dart';
-import '../services/coaching_service.dart';
 import '../shared/widgets/radar_background.dart';
 import '../shared/widgets/request_line.dart';
 import 'home_screen.dart'; // AppTopBar

@@ -37,14 +37,13 @@ class _Session {
   final String time;
   final IconData icon;
   final _SessionTag tag;
-  final bool enabled;
+  final bool enabled = true;
 
   const _Session({
     required this.title,
     required this.time,
     required this.icon,
     required this.tag,
-    this.enabled = true,
   });
 }
 

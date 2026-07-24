@@ -10,15 +10,15 @@ import 'login_screen.dart' show LoginScreen, showDeliveryPreferenceSheet;
 import 'my_stats_screen.dart';
 import 'chat_screen.dart';
 
-const _lime  = Color(0xFFA6FF2E);
+const _lime = Color(0xFFA6FF2E);
 const _amber = Color(0xFFD7A430);
-const _bg    = Color(0xFF050A05);
-const _surf  = Color(0xFF0C130C);
+const _bg = Color(0xFF050A05);
+const _surf = Color(0xFF0C130C);
 
 // ── Circular gauge painter ────────────────────────────────────────────────────
 
 class _GaugePainter extends CustomPainter {
-  final double value;  // 0.0–1.0
+  final double value; // 0.0–1.0
   final Color color;
 
   const _GaugePainter({required this.value, required this.color});
@@ -28,12 +28,14 @@ class _GaugePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width / 2) - 6;
     const startAngle = math.pi * 0.75;
-    const sweepAll   = math.pi * 1.5;
+    const sweepAll = math.pi * 1.5;
 
     // Track
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      startAngle, sweepAll, false,
+      startAngle,
+      sweepAll,
+      false,
       Paint()
         ..color = color.withValues(alpha: 0.10)
         ..strokeWidth = 5
@@ -45,7 +47,9 @@ class _GaugePainter extends CustomPainter {
     if (value > 0) {
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
-        startAngle, sweepAll * value.clamp(0.0, 1.0), false,
+        startAngle,
+        sweepAll * value.clamp(0.0, 1.0),
+        false,
         Paint()
           ..color = color
           ..strokeWidth = 5
@@ -56,7 +60,8 @@ class _GaugePainter extends CustomPainter {
 
     // Outer ring
     canvas.drawCircle(
-      center, radius + 8,
+      center,
+      radius + 8,
       Paint()
         ..color = color.withValues(alpha: 0.08)
         ..strokeWidth = 1
@@ -73,7 +78,7 @@ class _GaugePainter extends CustomPainter {
 
 class _StatGauge extends StatelessWidget {
   final String label;
-  final int value;   // 0–100
+  final int value; // 0–100
   final String grade;
   final Color color;
 
@@ -91,7 +96,8 @@ class _StatGauge extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            width: 90, height: 90,
+            width: 90,
+            height: 90,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -102,34 +108,46 @@ class _StatGauge extends StatelessWidget {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('$value',
-                        style: TextStyle(
-                            color: color,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            height: 1.0)),
-                    Text('/100',
-                        style: TextStyle(
-                            color: color.withValues(alpha: 0.40),
-                            fontSize: 9)),
+                    Text(
+                      '$value',
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        height: 1.0,
+                      ),
+                    ),
+                    Text(
+                      '/100',
+                      style: TextStyle(
+                        color: color.withValues(alpha: 0.40),
+                        fontSize: 9,
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
           const SizedBox(height: 6),
-          Text(label,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(grade,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.35),
-                  fontSize: 9,
-                  letterSpacing: 1.0)),
+          Text(
+            grade,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.35),
+              fontSize: 9,
+              letterSpacing: 1.0,
+            ),
+          ),
         ],
       ),
     );
@@ -140,37 +158,40 @@ class _StatGauge extends StatelessWidget {
 
 class _TacBar extends StatelessWidget {
   final String label;
-  final double value;       // 0.0–1.0
+  final double value; // 0.0–1.0
   final String? rightLabel;
-  final Color color;
+  final Color color = _lime;
 
-  const _TacBar({
-    required this.label,
-    required this.value,
-    this.rightLabel,
-    this.color = _lime,
-  });
+  const _TacBar({required this.label, required this.value, this.rightLabel});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Text(label,
+        Row(
+          children: [
+            Text(
+              label,
               style: TextStyle(
-                  color: color.withValues(alpha: 0.45),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5)),
-          const Spacer(),
-          if (rightLabel != null)
-            Text(rightLabel!,
+                color: color.withValues(alpha: 0.45),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.5,
+              ),
+            ),
+            const Spacer(),
+            if (rightLabel != null)
+              Text(
+                rightLabel!,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800)),
-        ]),
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 5),
         ClipRRect(
           borderRadius: BorderRadius.circular(1),
@@ -217,13 +238,16 @@ class _TabBtn extends StatelessWidget {
                 ? Border.all(color: _lime.withValues(alpha: 0.30))
                 : null,
           ),
-          child: Text(label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: active ? _lime : Colors.white.withValues(alpha: 0.30),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5)),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: active ? _lime : Colors.white.withValues(alpha: 0.30),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+            ),
+          ),
         ),
       ),
     );
@@ -261,24 +285,34 @@ class _ActionButton extends StatelessWidget {
                 : Colors.white.withValues(alpha: 0.10),
           ),
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
               color: primary ? _lime : Colors.white.withValues(alpha: 0.30),
-              size: 16),
-          const SizedBox(width: 10),
-          Text(label,
+              size: 16,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              label,
               style: TextStyle(
-                  color: primary ? _lime : Colors.white.withValues(alpha: 0.30),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2.0)),
-          const Spacer(),
-          Icon(Icons.chevron_right_rounded,
+                color: primary ? _lime : Colors.white.withValues(alpha: 0.30),
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2.0,
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right_rounded,
               color: primary
                   ? _lime.withValues(alpha: 0.50)
                   : Colors.white.withValues(alpha: 0.15),
-              size: 18),
-        ]),
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -348,7 +382,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // ── Header ──────────────────────────────────────────────────
               AppTopBar(
                 title: 'Operative Profile',
@@ -369,116 +402,166 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: _lime.withValues(alpha: 0.18)),
                 ),
-                child: Column(children: [
-
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-
-                    // Avatar — Discord profile picture or fallback icon
-                    Stack(children: [
-                      Container(
-                        width: 68, height: 68,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _lime.withValues(alpha: 0.08),
-                          border: Border.all(
-                              color: _lime.withValues(alpha: 0.45), width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                                color: _lime.withValues(alpha: 0.15),
-                                blurRadius: 12, spreadRadius: 1)
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Avatar — Discord profile picture or fallback icon
+                        Stack(
+                          children: [
+                            Container(
+                              width: 68,
+                              height: 68,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _lime.withValues(alpha: 0.08),
+                                border: Border.all(
+                                  color: _lime.withValues(alpha: 0.45),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _lime.withValues(alpha: 0.15),
+                                    blurRadius: 12,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: avatarUrl != null
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        avatarUrl,
+                                        width: 64,
+                                        height: 64,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => const Icon(
+                                          Icons.person_outline_rounded,
+                                          color: _lime,
+                                          size: 34,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.person_outline_rounded,
+                                      color: _lime,
+                                      size: 34,
+                                    ),
+                            ),
+                            Positioned(
+                              bottom: 2,
+                              right: 2,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _lime,
+                                  border: Border.all(color: _surf, width: 2),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        child: avatarUrl != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  avatarUrl,
-                                  width: 64, height: 64,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Icon(Icons.person_outline_rounded,
-                                          color: _lime, size: 34),
+
+                        const SizedBox(width: 14),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      displayName.toUpperCase(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 7,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _lime.withValues(alpha: 0.10),
+                                      borderRadius: BorderRadius.circular(2),
+                                      border: Border.all(
+                                        color: _lime.withValues(alpha: 0.30),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'ACTIVE',
+                                      style: TextStyle(
+                                        color: _lime,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                isDiscord
+                                    ? 'Discord Linked · Tier 3 Recruit'
+                                    : 'Tier 3 Recruit',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.40),
+                                  fontSize: 11,
                                 ),
-                              )
-                            : const Icon(Icons.person_outline_rounded,
-                                color: _lime, size: 34),
-                      ),
-                      Positioned(
-                        bottom: 2, right: 2,
-                        child: Container(
-                          width: 12, height: 12,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _lime,
-                            border: Border.all(color: _surf, width: 2),
+                              ),
+                              const SizedBox(height: 8),
+                              // K/D + WIN RATE + HRS
+                              Row(
+                                children: [
+                                  _MiniStat(label: 'K/D', value: '1.48'),
+                                  _MiniStatDiv(),
+                                  _MiniStat(label: 'WIN RATE', value: '58%'),
+                                  _MiniStatDiv(),
+                                  _MiniStat(label: 'HRS PLAYED', value: '72h'),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ]),
-
-                    const SizedBox(width: 14),
-
-                    Expanded(child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Flexible(
-                            child: Text(displayName.toUpperCase(),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white,
-                                    fontSize: 20, fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.0)),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _lime.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(2),
-                              border: Border.all(
-                                  color: _lime.withValues(alpha: 0.30)),
-                            ),
-                            child: Text('ACTIVE',
-                                style: TextStyle(color: _lime,
-                                    fontSize: 8, fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.5)),
-                          ),
-                        ]),
-                        const SizedBox(height: 3),
-                        Text(isDiscord ? 'Discord Linked · Tier 3 Recruit' : 'Tier 3 Recruit',
-                            style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.40),
-                                fontSize: 11)),
-                        const SizedBox(height: 8),
-                        // K/D + WIN RATE + HRS
-                        Row(children: [
-                          _MiniStat(label: 'K/D',       value: '1.48'),
-                          _MiniStatDiv(),
-                          _MiniStat(label: 'WIN RATE',  value: '58%'),
-                          _MiniStatDiv(),
-                          _MiniStat(label: 'HRS PLAYED', value: '72h'),
-                        ]),
                       ],
-                    )),
-                  ]),
+                    ),
 
-                  const SizedBox(height: 12),
-                  Container(height: 1, color: _lime.withValues(alpha: 0.08)),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 12),
+                    Container(height: 1, color: _lime.withValues(alpha: 0.08)),
+                    const SizedBox(height: 10),
 
-                  // Coordinates
-                  Row(children: [
-                    Icon(Icons.location_on_outlined,
-                        color: _lime.withValues(alpha: 0.30), size: 11),
-                    const SizedBox(width: 4),
-                    Text('GPC-752-BRAVO  ·  SECTOR DELTA  ·  ZONE 04',
-                        style: TextStyle(
+                    // Coordinates
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: _lime.withValues(alpha: 0.30),
+                          size: 11,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'GPC-752-BRAVO  ·  SECTOR DELTA  ·  ZONE 04',
+                          style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.25),
                             fontSize: 9,
                             letterSpacing: 0.8,
-                            fontFamily: 'monospace')),
-                  ]),
-                ]),
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 16),
@@ -491,14 +574,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: _lime.withValues(alpha: 0.10)),
                 ),
-                child: Row(children: [
-                  _TabBtn(label: 'OVERVIEW', index: 0, selected: _tab,
-                      onTap: (i) => setState(() => _tab = i)),
-                  _TabBtn(label: 'SKILLS',   index: 1, selected: _tab,
-                      onTap: (i) => setState(() => _tab = i)),
-                  _TabBtn(label: 'LOADOUT',  index: 2, selected: _tab,
-                      onTap: (i) => setState(() => _tab = i)),
-                ]),
+                child: Row(
+                  children: [
+                    _TabBtn(
+                      label: 'OVERVIEW',
+                      index: 0,
+                      selected: _tab,
+                      onTap: (i) => setState(() => _tab = i),
+                    ),
+                    _TabBtn(
+                      label: 'SKILLS',
+                      index: 1,
+                      selected: _tab,
+                      onTap: (i) => setState(() => _tab = i),
+                    ),
+                    _TabBtn(
+                      label: 'LOADOUT',
+                      index: 2,
+                      selected: _tab,
+                      onTap: (i) => setState(() => _tab = i),
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 18),
@@ -507,7 +604,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (_tab == 0) _buildOverview(context),
               if (_tab == 1) _buildSkills(savedTips),
               if (_tab == 2) _buildLoadout(savedLoadouts),
-
             ],
           ),
         ),
@@ -518,339 +614,469 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── OVERVIEW tab ───────────────────────────────────────────────────────────
 
   Widget _buildOverview(BuildContext context) {
-    return Column(children: [
-
-      // Stat gauges row
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          _StatGauge(label: 'AIM',      value: 72, grade: 'GOOD',  color: _lime),
-          _StatGauge(label: 'MOVEMENT', value: 68, grade: 'SOLID', color: Color(0xFF6E9BFF)),
-          _StatGauge(label: 'IQ',       value: 74, grade: 'GOOD',  color: _amber),
-        ],
-      ),
-
-      const SizedBox(height: 22),
-
-      // SEASON XP bar
-      Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: _surf,
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: _lime.withValues(alpha: 0.10)),
-        ),
-        child: Column(children: [
-          Row(children: [
-            Container(
-              width: 28, height: 28,
-              decoration: BoxDecoration(
-                color: _lime.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(2),
-              ),
-              child: const Icon(Icons.workspace_premium_rounded,
-                  color: _lime, size: 16),
+    return Column(
+      children: [
+        // Stat gauges row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: const [
+            _StatGauge(label: 'AIM', value: 72, grade: 'GOOD', color: _lime),
+            _StatGauge(
+              label: 'MOVEMENT',
+              value: 68,
+              grade: 'SOLID',
+              color: Color(0xFF6E9BFF),
             ),
-            const SizedBox(width: 10),
-            Text('SEASON XP',
-                style: TextStyle(color: _lime.withValues(alpha: 0.50),
-                    fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
-            const Spacer(),
-            const Text('LVL 18',
-                style: TextStyle(color: Colors.white, fontSize: 11,
-                    fontWeight: FontWeight.w800)),
-          ]),
-          const SizedBox(height: 10),
-          _TacBar(
-            label: '',
-            value: 18450 / 25000,
-            rightLabel: '18,450 / 25,000 XP',
-          ),
-        ]),
-      ),
-
-      const SizedBox(height: 10),
-
-      // COD CAMP COMPLETION bar
-      Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: _surf,
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: _lime.withValues(alpha: 0.10)),
+            _StatGauge(label: 'IQ', value: 74, grade: 'GOOD', color: _amber),
+          ],
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _TacBar(
-            label: 'COD CAMP COMPLETION',
-            value: 0.87,
-            rightLabel: '87%',
+
+        const SizedBox(height: 22),
+
+        // SEASON XP bar
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _surf,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: _lime.withValues(alpha: 0.10)),
           ),
-          const SizedBox(height: 10),
-          // Tier progression
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ['RECRUIT', 'REGULAR', 'VETERAN', 'ELITE', 'MASTER']
-                  .map((t) => Text(t,
-                      style: TextStyle(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: _lime.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: _lime,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'SEASON XP',
+                    style: TextStyle(
+                      color: _lime.withValues(alpha: 0.50),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Text(
+                    'LVL 18',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _TacBar(
+                label: '',
+                value: 18450 / 25000,
+                rightLabel: '18,450 / 25,000 XP',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // COD CAMP COMPLETION bar
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _surf,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: _lime.withValues(alpha: 0.10)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _TacBar(
+                label: 'COD CAMP COMPLETION',
+                value: 0.87,
+                rightLabel: '87%',
+              ),
+              const SizedBox(height: 10),
+              // Tier progression
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: ['RECRUIT', 'REGULAR', 'VETERAN', 'ELITE', 'MASTER']
+                    .map(
+                      (t) => Text(
+                        t,
+                        style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.22),
                           fontSize: 7,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5)))
-                  .toList()),
-        ]),
-      ),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
 
-      const SizedBox(height: 18),
+        const SizedBox(height: 18),
 
-      // My Stats entry
-      GestureDetector(
-        onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (_) => const MyStatsScreen())),
-        child: Container(
+        // My Stats entry
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MyStatsScreen()),
+          ),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF080E08),
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: _lime.withValues(alpha: 0.15)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.bar_chart_rounded,
+                  color: _lime.withValues(alpha: 0.55),
+                  size: 16,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'MY STATS  ·  Track performance by mode',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.40),
+                    fontSize: 11,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: _lime.withValues(alpha: 0.30),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // VIEW COACHING HISTORY
+        _ActionButton(
+          label: 'VIEW COACHING HISTORY',
+          icon: Icons.history_rounded,
+          onTap: () => setState(() => _tab = 1),
+          primary: true,
+        ),
+
+        const SizedBox(height: 10),
+
+        // ADJUST TRAINING PLAN
+        _ActionButton(
+          label: 'ADJUST TRAINING PLAN',
+          icon: Icons.edit_calendar_rounded,
+          primary: false,
+        ),
+
+        const SizedBox(height: 18),
+
+        // ── SETTINGS ────────────────────────────────────────────────────────
+        Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFF080E08),
             borderRadius: BorderRadius.circular(3),
-            border: Border.all(color: _lime.withValues(alpha: 0.15)),
+            border: Border.all(color: _lime.withValues(alpha: 0.10)),
           ),
-          child: Row(children: [
-            Icon(Icons.bar_chart_rounded, color: _lime.withValues(alpha: 0.55), size: 16),
-            const SizedBox(width: 10),
-            Text('MY STATS  ·  Track performance by mode',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.40),
-                    fontSize: 11)),
-            const Spacer(),
-            Icon(Icons.chevron_right_rounded,
-                color: _lime.withValues(alpha: 0.30), size: 16),
-          ]),
-        ),
-      ),
-
-      const SizedBox(height: 14),
-
-      // VIEW COACHING HISTORY
-      _ActionButton(
-        label: 'VIEW COACHING HISTORY',
-        icon: Icons.history_rounded,
-        onTap: () => setState(() => _tab = 1),
-        primary: true,
-      ),
-
-      const SizedBox(height: 10),
-
-      // ADJUST TRAINING PLAN
-      _ActionButton(
-        label: 'ADJUST TRAINING PLAN',
-        icon: Icons.edit_calendar_rounded,
-        primary: false,
-      ),
-
-      const SizedBox(height: 18),
-
-      // ── SETTINGS ────────────────────────────────────────────────────────
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF080E08),
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: _lime.withValues(alpha: 0.10)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('SETTINGS',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'SETTINGS',
                 style: TextStyle(
-                    color: _lime.withValues(alpha: 0.40),
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2.5)),
-            const SizedBox(height: 14),
-
-            // Coaching delivery preference row
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: _lime.withValues(alpha: 0.07),
-                  borderRadius: BorderRadius.circular(4),
+                  color: _lime.withValues(alpha: 0.40),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.5,
                 ),
-                child: Icon(Icons.send_rounded,
-                    color: _lime.withValues(alpha: 0.55), size: 14),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('COACHING DELIVERY',
-                        style: TextStyle(
+              const SizedBox(height: 14),
+
+              // Coaching delivery preference row
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: _lime.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      Icons.send_rounded,
+                      color: _lime.withValues(alpha: 0.55),
+                      size: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'COACHING DELIVERY',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5)),
-                    const SizedBox(height: 2),
-                    Text(
-                      _deliveryPref == null
-                          ? 'Not configured'
-                          : _deliveryPref == DeliveryPreference.app
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _deliveryPref == null
+                              ? 'Not configured'
+                              : _deliveryPref == DeliveryPreference.app
                               ? 'In-app chat'
                               : 'Discord DM (via Lt. Reaper)',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      await showDeliveryPreferenceSheet(
+                        context,
+                        dismissible: true,
+                      );
+                      if (mounted) {
+                        setState(() {
+                          _deliveryPref = AuthService.deliveryPreference;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _lime.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(
+                          color: _lime.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Text(
+                        'CHANGE',
+                        style: TextStyle(
+                          color: _lime.withValues(alpha: 0.70),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+              const SizedBox(height: 16),
+
+              // Sign out row
+              GestureDetector(
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: const Color(0xFF0C130C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: BorderSide(
+                          color: Colors.red.withValues(alpha: 0.30),
+                        ),
+                      ),
+                      title: const Text(
+                        'SIGN OUT',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      content: const Text(
+                        'You\'ll need to log in again to access coaching and saved data.',
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(
+                            'CANCEL',
+                            style: TextStyle(
+                              color: _lime.withValues(alpha: 0.70),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text(
+                            'SIGN OUT',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true && mounted) {
+                    await AuthService.logout();
+                    if (mounted) {
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    }
+                  }
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: Colors.redAccent.withValues(alpha: 0.55),
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'SIGN OUT',
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.35),
-                          fontSize: 10),
+                        color: Colors.redAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.redAccent.withValues(alpha: 0.30),
+                      size: 16,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () async {
-                  await showDeliveryPreferenceSheet(context, dismissible: true);
-                  if (mounted) {
-                    setState(() {
-                      _deliveryPref = AuthService.deliveryPreference;
-                    });
-                  }
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _lime.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(2),
-                    border: Border.all(color: _lime.withValues(alpha: 0.25)),
-                  ),
-                  child: Text('CHANGE',
-                      style: TextStyle(
-                          color: _lime.withValues(alpha: 0.70),
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5)),
-                ),
-              ),
-            ]),
-
-            const SizedBox(height: 16),
-            Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
-            const SizedBox(height: 16),
-
-            // Sign out row
-            GestureDetector(
-              onTap: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: const Color(0xFF0C130C),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      side: BorderSide(color: Colors.red.withValues(alpha: 0.30)),
-                    ),
-                    title: const Text('SIGN OUT',
-                        style: TextStyle(color: Colors.white, fontSize: 14,
-                            fontWeight: FontWeight.w800, letterSpacing: 1.5)),
-                    content: const Text(
-                        'You\'ll need to log in again to access coaching and saved data.',
-                        style: TextStyle(color: Colors.white70, fontSize: 13)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: Text('CANCEL',
-                            style: TextStyle(color: _lime.withValues(alpha: 0.70),
-                                fontSize: 11, fontWeight: FontWeight.w700,
-                                letterSpacing: 1.0)),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('SIGN OUT',
-                            style: TextStyle(color: Colors.redAccent,
-                                fontSize: 11, fontWeight: FontWeight.w700,
-                                letterSpacing: 1.0)),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed == true && mounted) {
-                  await AuthService.logout();
-                  if (mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                    );
-                  }
-                }
-              },
-              child: Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Icon(Icons.logout_rounded,
-                      color: Colors.redAccent.withValues(alpha: 0.55), size: 14),
-                ),
-                const SizedBox(width: 12),
-                const Text('SIGN OUT',
-                    style: TextStyle(
-                        color: Colors.redAccent,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5)),
-                const Spacer(),
-                Icon(Icons.chevron_right_rounded,
-                    color: Colors.redAccent.withValues(alpha: 0.30), size: 16),
-              ]),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
 
-      const SizedBox(height: 18),
+        const SizedBox(height: 18),
 
-      // Footer
-      Text('FORGED IN TRAINING. BUILT FOR WAR.',
+        // Footer
+        Text(
+          'FORGED IN TRAINING. BUILT FOR WAR.',
           style: TextStyle(
-              color: _lime.withValues(alpha: 0.15),
-              fontSize: 9,
-              letterSpacing: 3.0)),
-    ]);
+            color: _lime.withValues(alpha: 0.15),
+            fontSize: 9,
+            letterSpacing: 3.0,
+          ),
+        ),
+      ],
+    );
   }
 
   // ── SKILLS tab (saved tips + coaching history) ─────────────────────────────
 
   Widget _buildSkills(List<IntelItem> savedTips) {
-    return Column(children: [
-      Row(children: [
-        Text('SAVED TIPS',
-            style: TextStyle(color: _lime.withValues(alpha: 0.45),
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
-        const Spacer(),
-        Text('${savedTips.length} ITEMS',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.20),
-                fontSize: 9)),
-      ]),
-      const SizedBox(height: 10),
-      if (savedTips.isEmpty)
-        const EmptyStateCard(
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(
+              'SAVED TIPS',
+              style: TextStyle(
+                color: _lime.withValues(alpha: 0.45),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.0,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${savedTips.length} ITEMS',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.20),
+                fontSize: 9,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (savedTips.isEmpty)
+          const EmptyStateCard(
             title: 'No saved tips',
-            subtitle: 'Bookmark tips from the feed to see them here.')
-      else
-        ...savedTips.map((tip) => Padding(
+            subtitle: 'Bookmark tips from the feed to see them here.',
+          )
+        else
+          ...savedTips.map(
+            (tip) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: SavedTipCard(
                 item: tip,
                 onToggleSaved: () => widget.onToggleSavedTip(tip.id),
                 onTap: () => widget.onOpenTip(tip),
               ),
-            )),
-      if (widget.coachingHistory.isNotEmpty) ...[
-        const SizedBox(height: 18),
-        Text('COACHING HISTORY',
-            style: TextStyle(color: _lime.withValues(alpha: 0.45),
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
-        const SizedBox(height: 10),
-        ...widget.coachingHistory.reversed.map((req) => Padding(
+            ),
+          ),
+        if (widget.coachingHistory.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          Text(
+            'COACHING HISTORY',
+            style: TextStyle(
+              color: _lime.withValues(alpha: 0.45),
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.0,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...widget.coachingHistory.reversed.map(
+            (req) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: _HistoryCard(
                 request: req,
@@ -858,38 +1084,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ? () => widget.onDeleteCoachingRequest(req.requestId!)
                     : null,
               ),
-            )),
+            ),
+          ),
+        ],
       ],
-    ]);
+    );
   }
 
   // ── LOADOUT tab (saved loadouts) ────────────────────────────────────────────
 
   Widget _buildLoadout(List<Loadout> savedLoadouts) {
-    return Column(children: [
-      Row(children: [
-        Text('SAVED LOADOUTS',
-            style: TextStyle(color: _lime.withValues(alpha: 0.45),
-                fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2.0)),
-        const Spacer(),
-        Text('${savedLoadouts.length} BUILDS',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.20),
-                fontSize: 9)),
-      ]),
-      const SizedBox(height: 10),
-      if (savedLoadouts.isEmpty)
-        const EmptyStateCard(
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(
+              'SAVED LOADOUTS',
+              style: TextStyle(
+                color: _lime.withValues(alpha: 0.45),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.0,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${savedLoadouts.length} BUILDS',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.20),
+                fontSize: 9,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (savedLoadouts.isEmpty)
+          const EmptyStateCard(
             title: 'No saved loadouts',
-            subtitle: 'Bookmark builds from the Loadouts tab to save them here.')
-      else
-        ...savedLoadouts.map((lo) => Padding(
+            subtitle:
+                'Bookmark builds from the Loadouts tab to save them here.',
+          )
+        else
+          ...savedLoadouts.map(
+            (lo) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: _SavedLoadoutCard(
                 loadout: lo,
                 onRemove: () => widget.onToggleSavedLoadout(lo.id),
               ),
-            )),
-    ]);
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -905,14 +1151,22 @@ class _MiniStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
-        Text(label,
-            style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.30),
-                fontSize: 8,
-                letterSpacing: 1.0)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.30),
+            fontSize: 8,
+            letterSpacing: 1.0,
+          ),
+        ),
       ],
     );
   }
@@ -921,9 +1175,11 @@ class _MiniStat extends StatelessWidget {
 class _MiniStatDiv extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
-      width: 1, height: 28,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      color: Colors.white.withValues(alpha: 0.08));
+    width: 1,
+    height: 28,
+    margin: const EdgeInsets.symmetric(horizontal: 10),
+    color: Colors.white.withValues(alpha: 0.08),
+  );
 }
 
 // ── MiniProfileStat (legacy — kept for compatibility) ─────────────────────────
@@ -950,18 +1206,29 @@ class MiniProfileStat extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(3)),
         border: Border.all(color: _lime.withValues(alpha: 0.12)),
       ),
-      child: Column(children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(height: 6),
-        Text(value,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
+          Text(
+            value,
             style: const TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 2),
-        Text(label,
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.35), fontSize: 10),
-            textAlign: TextAlign.center),
-      ]),
+              color: Colors.white.withValues(alpha: 0.35),
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -973,11 +1240,12 @@ class SavedTipCard extends StatelessWidget {
   final VoidCallback onToggleSaved;
   final VoidCallback onTap;
 
-  const SavedTipCard(
-      {super.key,
-      required this.item,
-      required this.onToggleSaved,
-      required this.onTap});
+  const SavedTipCard({
+    super.key,
+    required this.item,
+    required this.onToggleSaved,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -990,36 +1258,55 @@ class SavedTipCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(3),
           border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
         ),
-        child: Row(children: [
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
                 color: item.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(3)),
-            child: Icon(item.icon, color: item.accent, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.title,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Icon(item.icon, color: item.accent, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 13,
-                        fontWeight: FontWeight.w700, height: 1.3)),
-                const SizedBox(height: 2),
-                Text(item.category,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.category,
                     style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.30),
-                        fontSize: 11)),
-              ])),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onToggleSaved,
-            child: const Icon(Icons.bookmark_rounded,
-                color: _amber, size: 20),
-          ),
-        ]),
+                      color: Colors.white.withValues(alpha: 0.30),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onToggleSaved,
+              child: const Icon(
+                Icons.bookmark_rounded,
+                color: _amber,
+                size: 20,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1035,10 +1322,14 @@ class _SavedLoadoutCard extends StatelessWidget {
 
   Color _tierColor(String tier) {
     switch (tier) {
-      case 'S': return const Color(0xFFFFD700);
-      case 'A': return const Color(0xFFA6FF2E);
-      case 'B': return const Color(0xFF6E9BFF);
-      default:  return const Color(0xFF888888);
+      case 'S':
+        return const Color(0xFFFFD700);
+      case 'A':
+        return const Color(0xFFA6FF2E);
+      case 'B':
+        return const Color(0xFF6E9BFF);
+      default:
+        return const Color(0xFF888888);
     }
   }
 
@@ -1057,39 +1348,63 @@ class _SavedLoadoutCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(3),
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
-      child: Row(children: [
-        // Tier badge
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(
-            color: tierColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(3),
-            border: Border.all(color: tierColor.withValues(alpha: 0.4)),
+      child: Row(
+        children: [
+          // Tier badge
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: tierColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: tierColor.withValues(alpha: 0.4)),
+            ),
+            child: Center(
+              child: Text(
+                loadout.tier,
+                style: TextStyle(
+                  color: tierColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
           ),
-          child: Center(
-            child: Text(loadout.tier,
-              style: TextStyle(color: tierColor, fontSize: 12, fontWeight: FontWeight.w900)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loadout.weapon,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${loadout.weaponClass}  ·  $attPreview',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.30),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(loadout.weapon,
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 2),
-            Text('${loadout.weaponClass}  ·  $attPreview',
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.30), fontSize: 11)),
-          ],
-        )),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: onRemove,
-          child: const Icon(Icons.bookmark_rounded, color: _amber, size: 20),
-        ),
-      ]),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.bookmark_rounded, color: _amber, size: 20),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1106,8 +1421,10 @@ class _HistoryCard extends StatelessWidget {
     final hasThread = request.requestId != null;
     return GestureDetector(
       onTap: hasThread
-          ? () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => ChatScreen(request: request)))
+          ? () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ChatScreen(request: request)),
+            )
           : null,
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -1115,81 +1432,144 @@ class _HistoryCard extends StatelessWidget {
           color: _surf,
           borderRadius: BorderRadius.circular(3),
           border: Border.all(
-              color: hasThread
-                  ? _lime.withValues(alpha: 0.18)
-                  : Colors.white.withValues(alpha: 0.06)),
-        ),
-        child: Row(children: [
-          Container(
-            width: 34, height: 34,
-            decoration: BoxDecoration(
-                color: _amber.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(3)),
-            child: const Icon(Icons.sports_esports_rounded,
-                color: _amber, size: 17),
+            color: hasThread
+                ? _lime.withValues(alpha: 0.18)
+                : Colors.white.withValues(alpha: 0.06),
           ),
-          const SizedBox(width: 10),
-          Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(request.mode,
-                    style: const TextStyle(color: Colors.white, fontSize: 13,
-                        fontWeight: FontWeight.w700)),
-                if (request.goal.isNotEmpty)
-                  Text(request.goal,
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.30),
-                          fontSize: 11)),
-              ])),
-          if (hasThread)
+        ),
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
-                color: _lime.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: _lime.withValues(alpha: 0.25)),
+                color: _amber.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(3),
               ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.chat_bubble_rounded, color: _lime, size: 10),
-                const SizedBox(width: 4),
-                Text('CHAT',
-                    style: const TextStyle(color: _lime, fontSize: 8,
-                        fontWeight: FontWeight.w900, letterSpacing: 1)),
-              ]),
-            )
-          else
-            Text(request.urgency.isNotEmpty ? request.urgency : 'ACTIVE',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.25), fontSize: 11)),
-          if (onDelete != null) ...[
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: const Color(0xFF111111),
-                    title: const Text('Delete request?',
-                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
-                    content: const Text('This will permanently remove this coaching request and its chat history.',
-                        style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 13)),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('CANCEL', style: TextStyle(color: Color(0xFF555555))),
-                      ),
-                      TextButton(
-                        onPressed: () { Navigator.pop(ctx); onDelete!(); },
-                        child: const Text('DELETE', style: TextStyle(color: Color(0xFFFF4444), fontWeight: FontWeight.w700)),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: const Icon(Icons.delete_outline_rounded, color: Color(0xFF555555), size: 18),
+              child: const Icon(
+                Icons.sports_esports_rounded,
+                color: _amber,
+                size: 17,
+              ),
             ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    request.mode,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (request.goal.isNotEmpty)
+                    Text(
+                      request.goal,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.30),
+                        fontSize: 11,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (hasThread)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _lime.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(color: _lime.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.chat_bubble_rounded,
+                      color: _lime,
+                      size: 10,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'CHAT',
+                      style: const TextStyle(
+                        color: _lime,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text(
+                request.urgency.isNotEmpty ? request.urgency : 'ACTIVE',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  fontSize: 11,
+                ),
+              ),
+            if (onDelete != null) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: const Color(0xFF111111),
+                      title: const Text(
+                        'Delete request?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      content: const Text(
+                        'This will permanently remove this coaching request and its chat history.',
+                        style: TextStyle(
+                          color: Color(0xFFAAAAAA),
+                          fontSize: 13,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'CANCEL',
+                            style: TextStyle(color: Color(0xFF555555)),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onDelete!();
+                          },
+                          child: const Text(
+                            'DELETE',
+                            style: TextStyle(
+                              color: Color(0xFFFF4444),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFF555555),
+                  size: 18,
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }

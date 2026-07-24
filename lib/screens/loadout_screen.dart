@@ -28,7 +28,6 @@ class _LoadoutScreenState extends State<LoadoutScreen> {
   static const _bg     = Color(0xFF0A0A0A);
   static const _surf   = Color(0xFF111111);
   static const _border = Color(0xFF252525);
-  static const _muted  = Color(0xFFAAAAAA);
   static const _soft   = Color(0xFF555555);
 
   @override
@@ -206,10 +205,7 @@ class _BuildCardState extends State<_BuildCard> {
 
   static const _green  = Color(0xFFA6FF2E);
   static const _surf   = Color(0xFF111111);
-  static const _surfAlt= Color(0xFF161616);
   static const _border = Color(0xFF252525);
-  static const _muted  = Color(0xFFAAAAAA);
-  static const _soft   = Color(0xFF555555);
 
   Color _tierColor(String tier) {
     switch (tier) {

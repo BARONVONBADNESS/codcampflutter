@@ -381,7 +381,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 // Submit button
                 AnimatedBuilder(
                   animation: _pulse,
-                  builder: (_, __) => GestureDetector(
+                  builder: (_, _) => GestureDetector(
                     onTap: _submitting ? null : _submit,
                     child: Container(
                       width: double.infinity,

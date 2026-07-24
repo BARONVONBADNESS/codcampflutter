@@ -305,7 +305,7 @@ class _BootSequence extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: ctrl,
-      builder: (_, __) {
+      builder: (_, _) {
         final t    = ctrl.value;
         final done = (t * _lines.length).floor();
         return Container(
@@ -381,7 +381,6 @@ class _TacField extends StatelessWidget {
   final bool obscure;
 
   const _TacField({
-    super.key,
     required this.ctrl,
     required this.label,
     required this.icon,
@@ -783,8 +782,8 @@ class _LoginScreenState extends State<LoginScreen>
     await _flash.forward();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(PageRouteBuilder(
-      pageBuilder: (_, __, ___) => const MainShell(),
-      transitionsBuilder: (_, a, __, child) =>
+      pageBuilder: (_, _, _) => const MainShell(),
+      transitionsBuilder: (_, a, _, child) =>
           FadeTransition(opacity: a, child: child),
       transitionDuration: const Duration(milliseconds: 600),
     ));
@@ -819,7 +818,7 @@ class _LoginScreenState extends State<LoginScreen>
                   // ── Skull logo — ~40% screen width
                   AnimatedBuilder(
                     animation: _pulse,
-                    builder: (_, __) => Container(
+                    builder: (_, _) => Container(
                       width: logoSize,
                       height: logoSize,
                       decoration: BoxDecoration(
@@ -901,7 +900,7 @@ class _LoginScreenState extends State<LoginScreen>
                   // ── ENGAGE button with pulsing glow
                   AnimatedBuilder(
                     animation: _pulse,
-                    builder: (_, __) => GestureDetector(
+                    builder: (_, _) => GestureDetector(
                       onTap: _engage,
                       child: Container(
                         width: double.infinity,
@@ -1042,7 +1041,7 @@ class _LoginScreenState extends State<LoginScreen>
           // ── Fade-to-black transition
           AnimatedBuilder(
             animation: _flash,
-            builder: (_, __) => _flash.value > 0
+            builder: (_, _) => _flash.value > 0
                 ? Container(color: _bg.withValues(alpha: _flash.value))
                 : const SizedBox.shrink(),
           ),

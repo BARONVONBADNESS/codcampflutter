@@ -26,13 +26,13 @@ class RequestOption extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: active
-              ? const Color(0xFF00FFC8).withOpacity(0.1)
-              : Colors.white.withOpacity(0.03),
+                ? const Color(0xFF00FFC8).withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: active
-                ? const Color(0xFF00FFC8)
-                : Colors.white.withOpacity(0.1),
+                  ? const Color(0xFF00FFC8)
+                  : Colors.white.withValues(alpha: 0.1),
               width: active ? 2 : 1,
             ),
           ),

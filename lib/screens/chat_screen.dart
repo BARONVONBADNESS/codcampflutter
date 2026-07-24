@@ -265,7 +265,7 @@ class _ChatHeader extends StatelessWidget {
             'assets/images/lt_reaper.png',
             fit: BoxFit.cover,
             alignment: const Alignment(0.3, -0.2),
-            errorBuilder: (_, __, ___) => Container(color: _surface),
+            errorBuilder: (_, _, _) => Container(color: _surface),
           ),
 
           // Gradient overlays for readability

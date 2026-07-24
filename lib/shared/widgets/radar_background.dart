@@ -84,10 +84,10 @@ class _RadarBackgroundState extends State<RadarBackground>
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.0014) // perspective depth
               ..rotateX(0.50)          // ~29° forward tilt
-              ..scale(1.06),
+              ..scaleByDouble(1.06, 1.06, 1.06, 1.0),
             child: AnimatedBuilder(
               animation: _ctrl,
-              builder: (_, __) => CustomPaint(
+              builder: (_, _) => CustomPaint(
                 painter: _TacticalMapPainter(scan: _ctrl.value),
               ),
             ),

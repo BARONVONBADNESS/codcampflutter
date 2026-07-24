@@ -11,11 +11,7 @@ import 'toggle_row.dart';
 /// The main form widget that captures all coaching request fields
 /// Extracted to allow reuse and independent testing
 class RequestForm extends StatefulWidget {
-  const RequestForm({
-    super.key,
-    required this.controller,
-    this.onChanged,
-  });
+  const RequestForm({super.key, required this.controller, this.onChanged});
 
   final CoachingRequestController controller;
   final VoidCallback? onChanged;
@@ -31,8 +27,11 @@ class _RequestFormState extends State<RequestForm> {
   }
 
   // ── Input helpers (shared with preview) ────────────────────────
-  void _updateStringField(String Function() getter, void Function(String) setter,
-      {String minText = ''}) {
+  void _updateStringField(
+    String Function() getter,
+    void Function(String) setter, {
+    String minText = '',
+  }) {
     final value = getter().trim();
     if (value != minText && value.length >= minText.length) {
       setter(value);
@@ -56,7 +55,8 @@ class _RequestFormState extends State<RequestForm> {
         PatchAwareTip(
           title: 'PATCH-AWARE',
           subtitle: 'Turn live intel into a real coaching request.',
-          tip: 'Warzone Intel is already tracking recurring patch notes, summaries, and weapon changes, so this screen just focuses on your immediate coaching needs.',
+          tip:
+              'Warzone Intel is already tracking recurring patch notes, summaries, and weapon changes, so this screen just focuses on your immediate coaching needs.',
         ),
         const SizedBox(height: 8),
         Text(
@@ -118,17 +118,24 @@ class _RequestFormState extends State<RequestForm> {
           TextField(
             decoration: InputDecoration(
               hintText: 'Describe your mode',
-              hintStyle: TextStyle(color: const Color(0xFF9330AF).withOpacity(0.4)),
+              hintStyle: TextStyle(
+                color: const Color(0xFF9330AF).withValues(alpha: 0.4),
+              ),
               filled: true,
-              fillColor: Colors.black.withOpacity(0.2),
+              fillColor: Colors.black.withValues(alpha: 0.2),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
             ),
             style: const TextStyle(color: Colors.white, fontSize: 12),
-            controller: _otherModeController ??= TextEditingController(text: c.modeDetail),
+            controller: _otherModeController ??= TextEditingController(
+              text: c.modeDetail,
+            ),
             onChanged: (v) {
               c.modeDetail = v;
               _notifyChanged();
@@ -149,27 +156,31 @@ class _RequestFormState extends State<RequestForm> {
         const SizedBox(height: 8),
         TextFormField(
           decoration: InputDecoration(
-            hintText: 'Weapon control, positioning, map awareness, clutching, aim, loadout...',
+            hintText:
+                'Weapon control, positioning, map awareness, clutching, aim, loadout...',
             hintStyle: TextStyle(
-              color: const Color(0xFF9330AF).withOpacity(0.4),
+              color: const Color(0xFF9330AF).withValues(alpha: 0.4),
             ),
             filled: true,
-            fillColor: Colors.black.withOpacity(0.2),
+            fillColor: Colors.black.withValues(alpha: 0.2),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
           ),
           style: const TextStyle(color: Colors.white, fontSize: 12),
           keyboardType: TextInputType.multiline,
           minLines: 1,
           maxLines: 4,
-          controller: _weaknessController ??= TextEditingController(text: c.weakness),
-          onChanged: (v) => _updateStringField(
-            () => c.weakness,
-            (val) => c.weakness = val,
+          controller: _weaknessController ??= TextEditingController(
+            text: c.weakness,
           ),
+          onChanged: (v) =>
+              _updateStringField(() => c.weakness, (val) => c.weakness = val),
         ),
         const SizedBox(height: 20),
         Text(
@@ -186,25 +197,26 @@ class _RequestFormState extends State<RequestForm> {
           decoration: InputDecoration(
             hintText: 'Push Diamond, hit kill threshold, stop r57ing...',
             hintStyle: TextStyle(
-              color: const Color(0xFF9330AF).withOpacity(0.4),
+              color: const Color(0xFF9330AF).withValues(alpha: 0.4),
             ),
             filled: true,
-            fillColor: Colors.black.withOpacity(0.2),
+            fillColor: Colors.black.withValues(alpha: 0.2),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
           ),
           style: const TextStyle(color: Colors.white, fontSize: 12),
           keyboardType: TextInputType.multiline,
           minLines: 1,
           maxLines: 4,
           controller: _goalController ??= TextEditingController(text: c.goal),
-          onChanged: (v) => _updateStringField(
-            () => c.goal,
-            (val) => c.goal = val,
-          ),
+          onChanged: (v) =>
+              _updateStringField(() => c.goal, (val) => c.goal = val),
         ),
 
         // ── SESSION LENGTH ───────────────────────────────────
@@ -223,20 +235,25 @@ class _RequestFormState extends State<RequestForm> {
           decoration: InputDecoration(
             hintText: '60',
             hintStyle: TextStyle(
-              color: const Color(0xFF9330AF).withOpacity(0.4),
+              color: const Color(0xFF9330AF).withValues(alpha: 0.4),
             ),
             filled: true,
-            fillColor: Colors.black.withOpacity(0.2),
+            fillColor: Colors.black.withValues(alpha: 0.2),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
           ),
           style: const TextStyle(color: Colors.white, fontSize: 12),
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
-          controller: _sessionController ??= TextEditingController(text: c.sessionLength),
+          controller: _sessionController ??= TextEditingController(
+            text: c.sessionLength,
+          ),
           onChanged: (v) => _updateIntField(
             () => c.sessionLength,
             (val) => c.sessionLength = val,

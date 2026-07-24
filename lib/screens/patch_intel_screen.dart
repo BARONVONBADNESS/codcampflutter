@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/models/patch_intel_item.dart';
 import '../shared/widgets/meta_pill.dart';
-import 'home_screen.dart';
 
 const _lime  = Color(0xFFA6FF2E);
 const _amber = Color(0xFFD7A430);
@@ -281,7 +280,7 @@ class _ZoneNode extends StatelessWidget {
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         AnimatedBuilder(
           animation: pulse,
-          builder: (_, __) {
+          builder: (_, _) {
             final g = isActive ? pulse.value : 0.0;
             return Stack(alignment: Alignment.center, children: [
               if (isActive)

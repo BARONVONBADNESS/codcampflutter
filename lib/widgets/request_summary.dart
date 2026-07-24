@@ -8,11 +8,7 @@ import 'toggle_row.dart';
 /// Request summary card displayed in the preview panel
 /// Shows a terminal-style animated summary of the coaching request
 class RequestSummary extends StatelessWidget {
-  const RequestSummary({
-    super.key,
-    required this.snapshot,
-    this.onConfirm,
-  });
+  const RequestSummary({super.key, required this.snapshot, this.onConfirm});
 
   final FullRequest snapshot;
   final VoidCallback? onConfirm;
@@ -26,9 +22,9 @@ class RequestSummary extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
+        color: Colors.black.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -38,11 +34,11 @@ class RequestSummary extends StatelessWidget {
             // Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               child: Text(
                 'MEMBER REQUEST',
                 style: TextStyle(
-                  color: const Color(0xFFFD7B560),
+                  color: const Color(0xFFD7B560),
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.1,
@@ -50,7 +46,7 @@ class RequestSummary extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-// Padding
+            // Padding
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
@@ -79,17 +75,15 @@ class RequestSummary extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Mode
-                  AnimatedSummaryLine(
-                    label: 'Mode',
-                    value: req.mode,
-                    delay: 0,
-                  ),
+                  AnimatedSummaryLine(label: 'Mode', value: req.mode, delay: 0),
                   const SizedBox(height: 6),
 
                   // Weakness
                   AnimatedSummaryLine(
                     label: 'Weakness',
-                    value: req.weakness.isEmpty ? '(not specified)' : req.weakness,
+                    value: req.weakness.isEmpty
+                        ? '(not specified)'
+                        : req.weakness,
                     delay: 1,
                     muted: req.weakness.isEmpty,
                   ),
@@ -147,7 +141,7 @@ class RequestSummary extends StatelessWidget {
                     Text(
                       'Member notes',
                       style: TextStyle(
-                        color: const Color(0xFFFD7B560),
+                        color: const Color(0xFFD7B560),
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.1,
@@ -201,7 +195,7 @@ class RequestSummary extends StatelessWidget {
         'Awaiting input...\n',
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.white.withOpacity(0.4),
+          color: Colors.white.withValues(alpha: 0.4),
           fontSize: 11,
           fontFamily: 'monospace',
         ),

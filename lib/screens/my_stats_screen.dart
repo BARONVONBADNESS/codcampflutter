@@ -70,9 +70,7 @@ class _MyStatsScreenState extends State<MyStatsScreen> {
   static const _green  = Color(0xFFA6FF2E);
   static const _dim    = Color(0xFF6E7F3E);
   static const _surf   = Color(0xFF111111);
-  static const _surfAlt= Color(0xFF161616);
   static const _border = Color(0xFF252525);
-  static const _muted  = Color(0xFFAAAAAA);
   static const _soft   = Color(0xFF555555);
 
   int _selectedMode = 0;
@@ -181,7 +179,7 @@ class _MyStatsScreenState extends State<MyStatsScreen> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _modes.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (ctx, i) {
                     final m   = _modes[i];
                     final sel = i == _selectedMode;
